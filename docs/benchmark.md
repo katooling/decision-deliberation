@@ -43,6 +43,36 @@ For real-model evidence:
 
 A quality gain against B0 but not compute-matched B1 supports “more inference helped,” not an architecture advantage.
 
+### Paired live benchmark
+
+Generate baseline decisions through the same configured provider:
+
+```bash
+deliberate benchmark-baseline case/request.json \
+  --provider provider.json \
+  --arm one_shot \
+  --rounds 1 \
+  --out work/one-shot.json
+
+deliberate benchmark-baseline case/request.json \
+  --provider provider.json \
+  --arm sequential_grill \
+  --rounds 5 \
+  --out work/sequential.json
+```
+
+Normalize baseline decisions and Decision Dossiers through the exported `normalizeBaselineArtifact` and `normalizeDossierArtifact` functions before review. Both produce the same artifact keys and omit run IDs, branch IDs, arm labels, scores, calls, tokens, and latency.
+
+Reviewers score only randomized `artifactId` files using the [blinded rubric](reviewer-rubric.md). After scores are frozen, join them to the hidden arm mapping in an observation suite and run:
+
+```bash
+deliberate benchmark-compare observations.json --out report.md
+```
+
+The analyzer reports reviewer quality separately from compute. It classifies every baseline as matched or unmatched using the suite's declared token tolerance and preserves partial runs, failed runs, missing reviews, constraints, losses, and ties.
+
+Use [`paired-observations.template.json`](../examples/validation/paired-observations.template.json) as the data contract. Zero calls and empty reviews mean evidence is pending; they are not placeholder wins.
+
 ## Claim gate
 
 Any report must say exactly which suite passed. The fixed disclaimer is:

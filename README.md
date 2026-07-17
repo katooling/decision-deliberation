@@ -95,6 +95,28 @@ Provider configuration:
 
 The same boundary can wrap a local model, hosted API adapter, or isolated agent runner. Provider commands are trusted local configuration and should not contain embedded credentials.
 
+### Use the Codex CLI reference provider
+
+Decision Deliberation can invoke an authenticated local Codex CLI directly:
+
+```json
+{
+  "type": "codex-cli",
+  "timeoutMs": 300000,
+  "maxOutputBytes": 10485760
+}
+```
+
+```bash
+npm run cli -- run examples/validation/run-storage/request.json \
+  --config examples/validation/config-smoke.json \
+  --provider examples/validation/provider-codex.json \
+  --out runs \
+  --run-id run-storage-smoke
+```
+
+Each call uses `codex exec` ephemerally in a fresh empty directory, with a read-only sandbox, no project or user configuration, and an explicit role-specific output schema. It reuses existing Codex authentication; provider files contain no key. See the official [Codex non-interactive-mode documentation](https://learn.chatgpt.com/docs/non-interactive-mode) for the underlying CLI behavior.
+
 ## Inspect a saved decision
 
 ```bash
@@ -116,6 +138,21 @@ npm run bench
 
 The included benchmark proves traversal and hindsight behavior on seeded closed-world fixtures. It does not prove broad superiority over people, one strong model call, or every normal design process. The [benchmark contract](docs/benchmark.md) defines the live, compute-matched comparison needed for stronger claims.
 
+For live comparison, run one-shot or sequential baselines and then analyze a blinded observation file:
+
+```bash
+npm run cli -- benchmark-baseline examples/validation/run-storage/request.json \
+  --provider examples/validation/provider-codex.json \
+  --arm sequential_grill \
+  --rounds 5 \
+  --out runs/run-storage-sequential.json
+
+npm run cli -- benchmark-compare \
+  examples/validation/paired-observations.template.json
+```
+
+The [first live validation report](docs/live-validation-2026-07-17.md) proves real-provider connectivity and a compute-matched sequential comparison. Reviewer scoring and five-person onboarding evidence remain explicitly pending.
+
 ## Use it when
 
 - a decision has real path dependencies;
@@ -133,6 +170,9 @@ Do not treat it as an oracle, a substitute for domain experts, or an automatic e
 - [Viewer contract](docs/viewer.md)
 - [Open-source readiness plan](docs/open-source-plan.md)
 - [Product plan and success measures](docs/product-plan.md)
+- [First live validation report](docs/live-validation-2026-07-17.md)
+- [Five-participant validation protocol](docs/user-study.md)
+- [Blinded reviewer rubric](docs/reviewer-rubric.md)
 - [Release process](docs/releasing.md)
 - [Contributing](CONTRIBUTING.md)
 - [Support](SUPPORT.md)

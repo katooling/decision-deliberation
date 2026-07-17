@@ -1,0 +1,6 @@
+participant_id,prior_exposure,case_id,activation_seconds,reached_viewer_without_help,intervention_reason,setup_failure_stage,identified_recommendation,identified_alternative,identified_assumption,identified_incomplete_branch,identified_completion_classification,trust_summary,missing_information,adoption_blocker,notes
+participant_01,no,,,,,,,,,,,,,,
+participant_02,no,,,,,,,,,,,,,,
+participant_03,no,,,,,,,,,,,,,,
+participant_04,unknown,,,,,,,,,,,,,,
+participant_05,unknown,,,,,,,,,,,,,,

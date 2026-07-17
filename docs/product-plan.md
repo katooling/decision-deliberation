@@ -92,6 +92,14 @@
 - accessibility and large-tree viewer checks
 - first live paired benchmark report
 
+Current `0.1.1` candidate status:
+
+- reference Codex CLI provider and conformance coverage implemented;
+- three sanitized cases and bounded configurations implemented;
+- first one-shot, sequential-grill, and depth-bounded tree observations recorded for one case;
+- compute matching and blinded-score joins implemented; and
+- five-person onboarding and blinded-review collection remain pending real participants.
+
 ### `0.2.x` — Repeatable use
 
 - guided initializer and configuration presets

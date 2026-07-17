@@ -9,9 +9,12 @@ import {
   DecisionRequestSchema,
 } from "./domain/schemas.js";
 import { runSyntheticBenchmark, renderBenchmarkMarkdown } from "./benchmark/index.js";
+import { runBaselineSeries, type BaselineArm } from "./benchmark/baseline.js";
+import { renderPairedBenchmarkMarkdown, runPairedBenchmark } from "./benchmark/live.js";
 import { DecisionEngine } from "./orchestration/engine.js";
 import { FileRunStore } from "./persistence/file-run-store.js";
 import { CommandProvider } from "./providers/command-provider.js";
+import { CodexCliProvider } from "./providers/codex-cli-provider.js";
 import { ScriptedProvider } from "./providers/scripted-provider.js";
 import { renderDossierMarkdown } from "./render/markdown.js";
 import { VERSION } from "./version.js";
@@ -69,6 +72,16 @@ async function loadProvider(path: string) {
         : {}),
       ...(typeof value.cwd === "string" ? { cwd: value.cwd } : {}),
       ...(typeof value.timeoutMs === "number" ? { timeoutMs: value.timeoutMs } : {}),
+    });
+  }
+  if (value.type === "codex-cli") {
+    return new CodexCliProvider({
+      ...(typeof value.codexBin === "string" ? { codexBin: value.codexBin } : {}),
+      ...(typeof value.model === "string" ? { model: value.model } : {}),
+      ...(typeof value.timeoutMs === "number" ? { timeoutMs: value.timeoutMs } : {}),
+      ...(typeof value.maxOutputBytes === "number"
+        ? { maxOutputBytes: value.maxOutputBytes }
+        : {}),
     });
   }
   if (value.type === "scripted" && (Array.isArray(value.responses) || typeof value.responses === "object")) {
@@ -178,6 +191,55 @@ async function benchmarkCommand(flags: Flags): Promise<void> {
   process.stdout.write(flags.json ? `${JSON.stringify(report, null, 2)}\n` : markdown);
 }
 
+async function benchmarkCompareCommand(positional: string[], flags: Flags): Promise<void> {
+  const suitePath = positional[0];
+  if (!suitePath) throw new Error("benchmark-compare requires an observation-suite JSON path");
+  const report = runPairedBenchmark(await readJson(suitePath));
+  const output = flags.json
+    ? `${JSON.stringify(report, null, 2)}\n`
+    : renderPairedBenchmarkMarkdown(report);
+  if (typeof flags.out === "string") {
+    await mkdir(dirname(resolve(flags.out)), { recursive: true });
+    await writeFile(resolve(flags.out), output, "utf8");
+  }
+  process.stdout.write(output);
+}
+
+async function benchmarkBaselineCommand(positional: string[], flags: Flags): Promise<void> {
+  const requestPath = positional[0];
+  if (!requestPath) throw new Error("benchmark-baseline requires a request JSON path");
+  const providerPath = requiredFlag(flags, "provider");
+  const arm = requiredFlag(flags, "arm");
+  if (arm !== "one_shot" && arm !== "sequential_grill") {
+    throw new Error("--arm must be one_shot or sequential_grill");
+  }
+  const rounds = typeof flags.rounds === "string"
+    ? Number(flags.rounds)
+    : arm === "one_shot" ? 1 : 3;
+  const request = DecisionRequestSchema.parse(await readJson(requestPath));
+  const provider = await loadProvider(providerPath);
+  const result = await runBaselineSeries({
+    provider,
+    request,
+    arm: arm as BaselineArm,
+    rounds,
+    maxAttemptsPerCall: 2,
+    callIdPrefix: `benchmark.${request.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${arm}`,
+  });
+  const output = `${JSON.stringify({
+    arm: result.arm,
+    rounds: result.rounds,
+    calls: result.calls,
+    usage: result.usage,
+    decision: result.decision,
+  }, null, 2)}\n`;
+  if (typeof flags.out === "string") {
+    await mkdir(dirname(resolve(flags.out)), { recursive: true });
+    await writeFile(resolve(flags.out), output, "utf8");
+  }
+  process.stdout.write(output);
+}
+
 async function viewCommand(flags: Flags): Promise<void> {
   const runsDirectory = typeof flags.runs === "string"
     ? flags.runs
@@ -213,6 +275,8 @@ Commands:
   deliberate status --run-id <id> [--out runs]
   deliberate approve --run-id <id> --decision approved|rejected --by <name> [--notes text] [--out runs]
   deliberate benchmark [--seed n] [--json] [--out report.md]
+  deliberate benchmark-baseline <request.json> --provider <provider.json> --arm one_shot|sequential_grill [--rounds n] [--out result.json]
+  deliberate benchmark-compare <observations.json> [--json] [--out report.md]
   deliberate view [--runs runs] [--port 4173]
 `;
 }
@@ -230,6 +294,10 @@ async function main(): Promise<void> {
       return approveCommand(flags);
     case "benchmark":
       return benchmarkCommand(flags);
+    case "benchmark-baseline":
+      return benchmarkBaselineCommand(positional, flags);
+    case "benchmark-compare":
+      return benchmarkCompareCommand(positional, flags);
     case "view":
       return viewCommand(flags);
     case "version":

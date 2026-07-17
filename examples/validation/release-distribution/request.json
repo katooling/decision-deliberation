@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "title": "Choose a distribution path for a new open-source CLI",
+  "decisionStatement": "Which release and installation strategy should a small maintainer team adopt for the first six months of a new TypeScript CLI?",
+  "context": "The CLI has a public repository, deterministic tests, versioned GitHub release artifacts, and a small early-user group. Its command-line and schema contracts may still change. Maintainers want low-friction installation without creating support obligations they cannot sustain.",
+  "scope": {
+    "inScope": [
+      "GitHub release artifacts, npm registry publication, and source installation",
+      "Versioning, checksums, upgrade instructions, and rollback",
+      "Maintainer and user support cost during public preview"
+    ],
+    "outOfScope": [
+      "Paid hosting or enterprise distribution",
+      "Automatic background updates",
+      "Operating-system-specific package managers in the first release"
+    ],
+    "constraints": [
+      "Every published artifact must be reproducibly inspectable",
+      "Breaking preview changes must be documented",
+      "The team can spend at most two maintainer-hours per week on distribution support"
+    ]
+  },
+  "criteria": [
+    {
+      "key": "activation",
+      "label": "Installation success",
+      "description": "How reliably a new user reaches a working CLI from clean instructions.",
+      "weight": 0.35,
+      "zeroAnchor": "Most users cannot install without maintainer help",
+      "oneAnchor": "At least eighty percent install unaided on supported systems"
+    },
+    {
+      "key": "maintainability",
+      "label": "Maintainer load",
+      "description": "The recurring operational and support burden created by the distribution path.",
+      "weight": 0.3,
+      "zeroAnchor": "The release channel exceeds the support budget",
+      "oneAnchor": "Routine releases and support fit comfortably within the budget"
+    },
+    {
+      "key": "supply_chain",
+      "label": "Supply-chain clarity",
+      "description": "How easily users can identify, verify, and reproduce the intended artifact.",
+      "weight": 0.2,
+      "zeroAnchor": "Artifact origin and integrity are ambiguous",
+      "oneAnchor": "Origin, contents, version, and checksum are explicit"
+    },
+    {
+      "key": "reversibility",
+      "label": "Release reversibility",
+      "description": "How safely maintainers and users can recover from a bad release.",
+      "weight": 0.15,
+      "zeroAnchor": "A bad release has no practical rollback path",
+      "oneAnchor": "Previous versions remain installable and rollback is documented"
+    }
+  ]
+}

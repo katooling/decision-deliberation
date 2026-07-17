@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "title": "Choose storage for inspectable local decision runs",
+  "decisionStatement": "Which storage architecture should a local-first decision tool use as its canonical run record while supporting replay, queries, and future team adapters?",
+  "context": "Each run contains append-only events, a derived graph, call artifacts, a human-readable dossier, and usage metadata. Runs must remain inspectable on disk and replay deterministically. Large installations may eventually need cross-run queries and optional shared storage.",
+  "scope": {
+    "inScope": [
+      "JSONL and file-directory storage, embedded databases, and hybrid projections",
+      "Crash recovery, schema evolution, replay, indexing, and export",
+      "A clean adapter boundary for future remote storage"
+    ],
+    "outOfScope": [
+      "A hosted multi-tenant service in the current release",
+      "Automatic synchronization between machines",
+      "Storing provider credentials inside run records"
+    ],
+    "constraints": [
+      "The canonical history must be append-only and replayable",
+      "A user must be able to inspect or export a run without proprietary tooling",
+      "Derived indexes may be rebuilt and must never silently replace source history"
+    ]
+  },
+  "criteria": [
+    {
+      "key": "integrity",
+      "label": "Replay integrity",
+      "description": "How strongly the design preserves ordered source history and deterministic replay.",
+      "weight": 0.35,
+      "zeroAnchor": "Source history can be silently overwritten or reordered",
+      "oneAnchor": "History is append-only, validated, and exactly replayable"
+    },
+    {
+      "key": "inspectability",
+      "label": "Inspectability",
+      "description": "How easily users and tools can understand, copy, diff, and export run data.",
+      "weight": 0.25,
+      "zeroAnchor": "Run data requires opaque or proprietary tooling",
+      "oneAnchor": "Canonical records and documented projections are directly inspectable"
+    },
+    {
+      "key": "queryability",
+      "label": "Query and retrieval",
+      "description": "How effectively the design supports navigation within a run and comparison across runs.",
+      "weight": 0.25,
+      "zeroAnchor": "Useful queries require full manual scans",
+      "oneAnchor": "Common and advanced queries are indexed without compromising history"
+    },
+    {
+      "key": "evolution",
+      "label": "Evolution cost",
+      "description": "How safely schemas, projections, and future storage adapters can evolve.",
+      "weight": 0.15,
+      "zeroAnchor": "Schema change requires unsafe bulk rewrites",
+      "oneAnchor": "Migrations and adapters evolve through explicit versioned contracts"
+    }
+  ]
+}
