@@ -5,6 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import type { AgentRequest } from "../src/agents/provider.js";
+import { structuredCall, StructuredOutputError } from "../src/agents/structured-call.js";
+import { QuestionProposalSchema } from "../src/domain/schemas.js";
 import { CodexCliProvider } from "../src/providers/codex-cli-provider.js";
 
 const proposal = {
@@ -19,6 +21,11 @@ const proposal = {
       unresolvedQuestions: [],
     },
   },
+};
+
+const codexProposal = {
+  ...proposal,
+  resolution: { ...proposal.resolution, question: null },
 };
 
 const baselineDecision = {
@@ -76,7 +83,7 @@ if (!prompt.includes("question-proposer") && !prompt.includes("baseline-designer
 }
 writeFileSync(${JSON.stringify(join(directory, "observed-cwd.txt"))}, process.cwd());
 const response = schema.properties?.resolution
-  ? ${JSON.stringify(JSON.stringify(proposal))}
+  ? ${JSON.stringify(JSON.stringify(codexProposal))}
   : ${JSON.stringify(JSON.stringify(baselineDecision))};
 const events = [
   { type: "thread.started", thread_id: "thread_fixture" },
@@ -112,6 +119,7 @@ test("Codex CLI provider isolates the run and returns structured output with usa
       threadId: "thread_fixture",
       cachedInputTokens: 20,
       reasoningOutputTokens: 5,
+      rawProviderText: JSON.stringify(codexProposal),
     });
 
     const observedCwd = await readFile(join(directory, "observed-cwd.txt"), "utf8");
@@ -183,6 +191,91 @@ process.stdin.on("end", () => {
     const provider = new CodexCliProvider({ codexBin, timeoutMs: 5_000 });
     await assert.rejects(provider.invoke(request), /SCHEMA_CAUSE: invalid output schema/);
   } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("Codex CLI provider does not silently repair contradictory union output", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "decision-deliberation-codex-test-"));
+  try {
+    const contradictory = {
+      ...codexProposal,
+      resolution: {
+        ...codexProposal.resolution,
+        question: {
+          semanticKey: "unexpected",
+          text: "This peer must be null.",
+          rationale: "It contradicts the selected conclusion arm.",
+          resolves: ["Nothing"],
+          options: [],
+          recommendation: { optionKey: "none", reason: "Invalid fixture", confidence: 0 },
+          coverageRationale: "Invalid fixture",
+          atomicityRationale: "Invalid fixture",
+          exclusivityRationale: "Invalid fixture",
+        },
+      },
+    };
+    const codexBin = join(directory, "contradictory-codex.mjs");
+    await writeFile(
+      codexBin,
+      `#!/usr/bin/env node
+process.stdin.resume();
+process.stdin.on("end", () => {
+  const text = ${JSON.stringify(JSON.stringify(contradictory))};
+  process.stdout.write(JSON.stringify({ type: "item.completed", item: { type: "agent_message", text } }) + "\\n");
+  process.stdout.write(JSON.stringify({ type: "turn.completed", usage: {} }) + "\\n");
+});
+`,
+      "utf8",
+    );
+    await chmod(codexBin, 0o755);
+    const provider = new CodexCliProvider({ codexBin, timeoutMs: 5_000 });
+
+    await assert.rejects(
+      structuredCall({ provider, request, schema: QuestionProposalSchema, maxAttempts: 1 }),
+      (error: unknown) => {
+        assert.ok(error instanceof StructuredOutputError);
+        assert.equal(error.artifacts[0]?.response?.text, JSON.stringify(contradictory));
+        assert.equal(
+          error.artifacts[0]?.response?.metadata?.rawProviderText,
+          JSON.stringify(contradictory),
+        );
+        return true;
+      },
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("Codex CLI provider filters ambient credentials and redacts diagnostic secrets", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "decision-deliberation-codex-test-"));
+  const ambientKey = "DECISION_DELIBERATION_TEST_SECRET";
+  const previous = process.env[ambientKey];
+  process.env[ambientKey] = "sk-fixture12345";
+  try {
+    const codexBin = join(directory, "failing-codex.mjs");
+    await writeFile(
+      codexBin,
+      `#!/usr/bin/env node
+if (process.env.${ambientKey}) process.stderr.write("inherited=" + process.env.${ambientKey} + "\\n");
+process.stderr.write("provider echoed sk-fixture12345 while explaining the failure\\n");
+process.exit(1);
+`,
+      "utf8",
+    );
+    await chmod(codexBin, 0o755);
+    const provider = new CodexCliProvider({ codexBin, timeoutMs: 5_000 });
+    await assert.rejects(provider.invoke(request), (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.doesNotMatch(error.message, /fixture12345/);
+      assert.match(error.message, /\[REDACTED\]/);
+      assert.doesNotMatch(error.message, /inherited=/);
+      return true;
+    });
+  } finally {
+    if (previous === undefined) delete process.env[ambientKey];
+    else process.env[ambientKey] = previous;
     await rm(directory, { recursive: true, force: true });
   }
 });

@@ -69,7 +69,7 @@ Reviewers score only randomized `artifactId` files using the [blinded rubric](re
 deliberate benchmark-compare observations.json --out report.md
 ```
 
-The analyzer reports reviewer quality separately from compute. It classifies every baseline as matched or unmatched using the suite's declared token tolerance and preserves partial runs, failed runs, missing reviews, constraints, losses, and ties.
+The analyzer reports reviewer quality separately from compute. It classifies every observed baseline as matched or unmatched using the suite's declared token tolerance and preserves partial runs, failed runs, explicitly missing observations, missing reviews, constraints, losses, and ties. Missing observations use `status: "missing"` with zero calls and usage; incomplete, failed, missing, or constraint-violating comparisons remain unscored.
 
 Use [`paired-observations.template.json`](../examples/validation/paired-observations.template.json) as the data contract. Zero calls and empty reviews mean evidence is pending; they are not placeholder wins.
 

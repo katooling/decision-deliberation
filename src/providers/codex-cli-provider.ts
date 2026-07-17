@@ -3,8 +3,6 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { z } from "zod";
-
 import type {
   AgentProvider,
   AgentRawResponse,
@@ -12,14 +10,10 @@ import type {
   AgentUsage,
 } from "../agents/provider.js";
 import {
-  BaselineDecisionSchema,
-  BranchEvaluationSchema,
-  ConclusionResolutionSchema,
-  CoverageReviewSchema,
-  ExpansionResolutionSchema,
-  FinalSynthesisSchema,
-  QuestionProposalSchema,
-} from "../domain/schemas.js";
+  decodeCodexStructuredText,
+  outputSchemaForRequest,
+  schemaForRequest,
+} from "./codex-cli-codec.js";
 
 export interface CodexCliProviderOptions {
   codexBin?: string;
@@ -41,84 +35,33 @@ interface ParsedCodexEvents {
   usage?: CodexUsage;
 }
 
-type JsonSchemaObject = Record<string, unknown>;
+const ENVIRONMENT_ALLOWLIST = [
+  "PATH", "Path", "HOME", "USER", "LOGNAME", "SHELL",
+  "TMPDIR", "TMP", "TEMP", "LANG", "LC_ALL", "LC_CTYPE",
+  "CODEX_HOME", "CODEX_API_KEY",
+  "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "ALL_PROXY",
+  "http_proxy", "https_proxy", "no_proxy", "all_proxy",
+  "SSL_CERT_FILE", "SSL_CERT_DIR", "NODE_EXTRA_CA_CERTS",
+] as const;
 
-function schemaForRequest(request: AgentRequest): z.ZodType {
-  switch (request.role) {
-    case "question-proposer":
-      return QuestionProposalSchema;
-    case "coverage-reviewer":
-      return CoverageReviewSchema;
-    case "question-synthesizer":
-      return FinalSynthesisSchema;
-    case "branch-evaluator":
-      return BranchEvaluationSchema;
-    case "baseline-designer":
-      return BaselineDecisionSchema;
-  }
+function codexEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(
+    ENVIRONMENT_ALLOWLIST.flatMap((key) => source[key] === undefined ? [] : [[key, source[key]]]),
+  );
 }
 
-function objectProperties(schema: JsonSchemaObject): Record<string, JsonSchemaObject> {
-  if (typeof schema.properties !== "object" || schema.properties === null) {
-    throw new Error("generated JSON Schema did not contain object properties");
+function redactSensitiveText(text: string, environment: NodeJS.ProcessEnv): string {
+  let redacted = text;
+  for (const [key, value] of Object.entries(environment)) {
+    if (value === undefined || value.length < 4) continue;
+    if (/key|token|secret|password/i.test(key) || /_proxy$/i.test(key)) {
+      redacted = redacted.split(value).join("[REDACTED]");
+    }
   }
-  return schema.properties as Record<string, JsonSchemaObject>;
-}
-
-function nullableObjectSchema(schema: JsonSchemaObject): JsonSchemaObject {
-  return { ...structuredClone(schema), type: ["object", "null"] };
-}
-
-/** Codex structured outputs rejects `oneOf`, so encode the selected union arm with nullable peers. */
-function outputSchemaForRequest(request: AgentRequest, schema: z.ZodType): JsonSchemaObject {
-  const generated = z.toJSONSchema(schema) as JsonSchemaObject;
-  if (request.role !== "question-proposer" && request.role !== "question-synthesizer") {
-    return generated;
-  }
-  const expansion = z.toJSONSchema(ExpansionResolutionSchema) as JsonSchemaObject;
-  const conclusion = z.toJSONSchema(ConclusionResolutionSchema) as JsonSchemaObject;
-  const expansionProperties = objectProperties(expansion);
-  const conclusionProperties = objectProperties(conclusion);
-  const rootProperties = objectProperties(generated);
-  return {
-    ...generated,
-    properties: {
-      ...rootProperties,
-      resolution: {
-        type: "object",
-        properties: {
-          type: { type: "string", enum: ["expand", "conclude"] },
-          question: nullableObjectSchema(expansionProperties.question ?? {}),
-          conclusion: nullableObjectSchema(conclusionProperties.conclusion ?? {}),
-        },
-        required: ["type", "question", "conclusion"],
-        additionalProperties: false,
-      },
-    },
-  };
-}
-
-function normalizeStructuredResult(request: AgentRequest, value: unknown): unknown {
-  if (request.role !== "question-proposer" && request.role !== "question-synthesizer") {
-    return value;
-  }
-  if (typeof value !== "object" || value === null) return value;
-  const document = value as Record<string, unknown>;
-  if (typeof document.resolution !== "object" || document.resolution === null) return value;
-  const resolution = document.resolution as Record<string, unknown>;
-  if (resolution.type === "expand") {
-    return {
-      schemaVersion: document.schemaVersion,
-      resolution: { type: "expand", question: resolution.question },
-    };
-  }
-  if (resolution.type === "conclude") {
-    return {
-      schemaVersion: document.schemaVersion,
-      resolution: { type: "conclude", conclusion: resolution.conclusion },
-    };
-  }
-  return value;
+  return redacted
+    .replace(/\b(?:sk|sess)-[A-Za-z0-9_-]{8,}\b/g, "[REDACTED]")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+=*/gi, "Bearer [REDACTED]")
+    .replace(/(["']?(?:access_token|refresh_token|api_key|password)["']?\s*[:=]\s*["']?)[^\s,"'}]+/gi, "$1[REDACTED]");
 }
 
 function buildPrompt(request: AgentRequest): string {
@@ -185,6 +128,7 @@ function collectProcess(
   stdin: string,
   timeoutMs: number,
   maxOutputBytes: number,
+  environment: NodeJS.ProcessEnv,
 ): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const stdout: Buffer[] = [];
@@ -220,8 +164,8 @@ function collectProcess(
       const stdoutText = Buffer.concat(stdout).toString("utf8");
       const stderrText = Buffer.concat(stderr).toString("utf8");
       if (code !== 0) {
-        const stdoutDetail = stdoutText.trim().slice(-4_000);
-        const stderrDetail = stderrText.trim().slice(-4_000);
+        const stdoutDetail = redactSensitiveText(stdoutText.trim().slice(-4_000), environment);
+        const stderrDetail = redactSensitiveText(stderrText.trim().slice(-4_000), environment);
         const detail = [
           ...(stdoutDetail.length === 0 ? [] : [`stdout: ${stdoutDetail}`]),
           ...(stderrDetail.length === 0 ? [] : [`stderr: ${stderrDetail}`]),
@@ -279,9 +223,10 @@ export class CodexCliProvider implements AgentProvider {
         ...(this.options.model === undefined ? [] : ["--model", this.options.model]),
         "-",
       ];
+      const environment = codexEnvironment(process.env);
       const child = spawn(this.codexBin, args, {
         cwd: directory,
-        env: process.env,
+        env: environment,
         shell: false,
       });
       const result = await collectProcess(
@@ -289,15 +234,14 @@ export class CodexCliProvider implements AgentProvider {
         buildPrompt(request),
         this.timeoutMs,
         this.maxOutputBytes,
+        environment,
       );
-      const events = parseEventStream(result.stdout);
-      const decoded = normalizeStructuredResult(
-        request,
-        JSON.parse(events.message) as unknown,
-      );
-      const validated = schema.safeParse(decoded);
-      if (!validated.success) {
-        throw new Error(`codex final message violated its output schema: ${z.prettifyError(validated.error)}`);
+      let events: ParsedCodexEvents;
+      try {
+        events = parseEventStream(result.stdout);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(redactSensitiveText(message, environment));
       }
       const latencyMs = Math.round(performance.now() - startedAt);
       const reported = events.usage;
@@ -307,10 +251,11 @@ export class CodexCliProvider implements AgentProvider {
         latencyMs,
       };
       return {
-        text: JSON.stringify(validated.data),
+        text: decodeCodexStructuredText(request, events.message),
         usage,
         metadata: {
           provider: "codex-cli",
+          rawProviderText: events.message,
           ...(events.threadId === undefined ? {} : { threadId: events.threadId }),
           ...(reported?.cached_input_tokens === undefined
             ? {}

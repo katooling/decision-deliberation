@@ -38,10 +38,13 @@ The run correctly reported `partial_budget_exhausted` with reason `max_depth`; i
 The first tree attempt failed before inference because Zod's JSON Schema represented the expand/conclude union with `oneOf`, which Codex structured outputs rejects. The provider now:
 
 1. emits a compatible schema with a discriminator and nullable peer fields;
-2. normalizes the selected field back into the strict domain union; and
-3. validates it with the unchanged Zod domain schema.
+2. translates only an exact envelope whose unused peer is `null`;
+3. leaves contradictory or extended payloads untouched for controller-owned validation; and
+4. retains the raw provider text in the call artifact while validating the canonical form with the unchanged Zod domain schema.
 
-Regression tests also ensure that failed Codex runs retain the decisive tails of stdout and stderr instead of hiding an API error behind repeated warnings.
+Regression tests also ensure that failed Codex runs retain redacted decisive tails of stdout and stderr instead of hiding an API error behind repeated warnings. The subprocess receives an explicit runtime/authentication environment allowlist rather than the full ambient environment.
+
+After that security hardening, a fresh one-shot provider call succeeded using existing local authentication: `20,768` input tokens, `1,190` output tokens, and `45.1 s` latency. This is a connectivity/conformance proof, not an additional scored benchmark observation.
 
 ## What is not proven
 

@@ -10,7 +10,7 @@
         {
           "artifactId": "artifact_km_alpha",
           "arm": "one_shot",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -18,7 +18,7 @@
         {
           "artifactId": "artifact_km_beta",
           "arm": "sequential_grill",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -26,7 +26,7 @@
         {
           "artifactId": "artifact_km_gamma",
           "arm": "decision_tree",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -40,7 +40,7 @@
         {
           "artifactId": "artifact_rd_alpha",
           "arm": "one_shot",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -48,7 +48,7 @@
         {
           "artifactId": "artifact_rd_beta",
           "arm": "sequential_grill",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -56,7 +56,7 @@
         {
           "artifactId": "artifact_rd_gamma",
           "arm": "decision_tree",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -70,7 +70,7 @@
         {
           "artifactId": "artifact_rs_alpha",
           "arm": "one_shot",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -78,7 +78,7 @@
         {
           "artifactId": "artifact_rs_beta",
           "arm": "sequential_grill",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []
@@ -86,7 +86,7 @@
         {
           "artifactId": "artifact_rs_gamma",
           "arm": "decision_tree",
-          "status": "partial",
+          "status": "missing",
           "calls": 0,
           "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
           "constraintViolations": []

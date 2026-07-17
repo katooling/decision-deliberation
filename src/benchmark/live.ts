@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const BenchmarkArmSchema = z.enum(["one_shot", "sequential_grill", "decision_tree"]);
-const BenchmarkStatusSchema = z.enum(["complete", "partial", "failed"]);
+const BenchmarkStatusSchema = z.enum(["complete", "partial", "failed", "missing"]);
 const UnitScore = z.number().min(0).max(1);
 const NonNegative = z.number().nonnegative();
 
@@ -74,10 +74,44 @@ export const PairedBenchmarkSuiteSchema = z
               });
             }
           }
+          const reviewPairs = value.reviews.map((review) => `${review.reviewerId}\u0000${review.artifactId}`);
+          if (new Set(reviewPairs).size !== reviewPairs.length) {
+            context.addIssue({
+              code: "custom",
+              path: ["reviews"],
+              message: "a reviewer may score each artifact only once",
+            });
+          }
+          for (const [index, artifact] of value.artifacts.entries()) {
+            if (artifact.status !== "missing") continue;
+            const hasUsage = artifact.calls !== 0 || artifact.usage.inputTokens !== 0 ||
+              artifact.usage.outputTokens !== 0 || artifact.usage.latencyMs !== 0 ||
+              artifact.usage.costUsd !== undefined;
+            if (hasUsage) {
+              context.addIssue({
+                code: "custom",
+                path: ["artifacts", index],
+                message: "a missing observation must have zero calls and usage",
+              });
+            }
+            if (value.reviews.some((review) => review.artifactId === artifact.artifactId)) {
+              context.addIssue({
+                code: "custom",
+                path: ["reviews"],
+                message: "a missing observation cannot have reviewer scores",
+              });
+            }
+          }
         }),
     ).min(1),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    const caseIds = value.cases.map((item) => item.caseId);
+    if (new Set(caseIds).size !== caseIds.length) {
+      context.addIssue({ code: "custom", path: ["cases"], message: "case IDs must be unique" });
+    }
+  });
 
 export type PairedBenchmarkSuite = z.infer<typeof PairedBenchmarkSuiteSchema>;
 export type BenchmarkArm = z.infer<typeof BenchmarkArmSchema>;
@@ -156,14 +190,17 @@ function meanScore(
 }
 
 function compareToTreatment(
-  arm: BenchmarkArm,
-  score: MeanBenchmarkScore | null,
-  treatment: MeanBenchmarkScore | null,
+  artifact: PairedArmResult,
+  treatment: PairedArmResult,
   tieTolerance: number,
 ): BenchmarkComparison {
-  if (arm === "decision_tree") return "reference";
-  if (score === null || treatment === null) return "unscored";
-  const delta = score.composite - treatment.composite;
+  if (artifact.arm === "decision_tree") return "reference";
+  if (artifact.status !== "complete" || treatment.status !== "complete") return "unscored";
+  if (artifact.constraintViolations.length > 0 || treatment.constraintViolations.length > 0) {
+    return "unscored";
+  }
+  if (artifact.meanScore === null || treatment.meanScore === null) return "unscored";
+  const delta = artifact.meanScore.composite - treatment.meanScore.composite;
   if (Math.abs(delta) <= tieTolerance) return "tie";
   return delta > 0 ? "win" : "loss";
 }
@@ -176,18 +213,18 @@ export function runPairedBenchmark(input: unknown): PairedBenchmarkReport {
     ) as Record<BenchmarkArm, (typeof benchmarkCase.artifacts)[number]>;
     const treatment = artifacts.decision_tree;
     const treatmentTokens = treatment.usage.inputTokens + treatment.usage.outputTokens;
-    const treatmentScore = meanScore(benchmarkCase.reviews, treatment.artifactId);
-    const arms = Object.fromEntries(
+    const preliminaryArms = Object.fromEntries(
       BenchmarkArmSchema.options.map((arm) => {
         const artifact = artifacts[arm];
         const totalTokens = artifact.usage.inputTokens + artifact.usage.outputTokens;
         const tokenRatioToTreatment = treatmentTokens === 0
           ? arm === "decision_tree" ? 1 : null
           : round(totalTokens / treatmentTokens);
-        const computeMatchedToTreatment = arm === "decision_tree" || (
+        const computeMatchedToTreatment = artifact.status !== "missing" && treatment.status !== "missing" &&
+          (arm === "decision_tree" || (
           tokenRatioToTreatment !== null &&
           Math.abs(tokenRatioToTreatment - 1) <= suite.computeTolerance
-        );
+          ));
         const score = meanScore(benchmarkCase.reviews, artifact.artifactId);
         const result: PairedArmResult = {
           artifactId: artifact.artifactId,
@@ -201,15 +238,23 @@ export function runPairedBenchmark(input: unknown): PairedBenchmarkReport {
           meanScore: score,
           tokenRatioToTreatment,
           computeMatchedToTreatment,
-          comparisonToTreatment: compareToTreatment(
-            arm,
-            score,
-            treatmentScore,
-            suite.tieTolerance,
-          ),
+          comparisonToTreatment: arm === "decision_tree" ? "reference" : "unscored",
         };
         return [arm, result];
       }),
+    ) as Record<BenchmarkArm, PairedArmResult>;
+    const arms = Object.fromEntries(
+      BenchmarkArmSchema.options.map((arm) => [
+        arm,
+        {
+          ...preliminaryArms[arm],
+          comparisonToTreatment: compareToTreatment(
+            preliminaryArms[arm],
+            preliminaryArms.decision_tree,
+            suite.tieTolerance,
+          ),
+        },
+      ]),
     ) as Record<BenchmarkArm, PairedArmResult>;
     return { caseId: benchmarkCase.caseId, arms };
   });
@@ -237,6 +282,10 @@ function score(value: number | undefined): string {
   return value === undefined ? "—" : value.toFixed(3);
 }
 
+function cost(value: number | null): string {
+  return value === null ? "—" : `$${value.toFixed(4)}`;
+}
+
 export function renderPairedBenchmarkMarkdown(report: PairedBenchmarkReport): string {
   const lines = [
     "# Paired Decision Benchmark",
@@ -247,14 +296,14 @@ export function renderPairedBenchmarkMarkdown(report: PairedBenchmarkReport): st
     "",
     "Reviewer scores are joined to blinded artifact IDs after review. Compute matching is reported independently from quality.",
     "",
-    "| Case | Arm | Status | Composite | Tokens | Ratio | Compute | Calls | Latency |",
-    "|---|---|---|---:|---:|---:|---|---:|---:|",
+    "| Case | Arm | Status | Composite | Tokens | Ratio | Compute | Calls | Latency | Cost |",
+    "|---|---|---|---:|---:|---:|---|---:|---:|---:|",
     ...report.cases.flatMap((item) => BenchmarkArmSchema.options.map((arm) => {
       const result = item.arms[arm];
       const ratio = result.tokenRatioToTreatment === null
         ? "—"
         : result.tokenRatioToTreatment.toFixed(3);
-      return `| ${item.caseId} | ${arm} | ${result.status} | ${score(result.meanScore?.composite)} | ${result.totalTokens} | ${ratio} | ${result.computeMatchedToTreatment ? "MATCHED" : "UNMATCHED"} | ${result.calls} | ${Math.round(result.latencyMs)} ms |`;
+      return `| ${item.caseId} | ${arm} | ${result.status} | ${score(result.meanScore?.composite)} | ${result.totalTokens} | ${ratio} | ${result.computeMatchedToTreatment ? "MATCHED" : "UNMATCHED"} | ${result.calls} | ${Math.round(result.latencyMs)} ms | ${cost(result.costUsd)} |`;
     })),
     "",
     "## Aggregate",

@@ -115,7 +115,7 @@ npm run cli -- run examples/validation/run-storage/request.json \
   --run-id run-storage-smoke
 ```
 
-Each call uses `codex exec` ephemerally in a fresh empty directory, with a read-only sandbox, no project or user configuration, and an explicit role-specific output schema. It reuses existing Codex authentication; provider files contain no key. See the official [Codex non-interactive-mode documentation](https://learn.chatgpt.com/docs/non-interactive-mode) for the underlying CLI behavior.
+Each call uses `codex exec` ephemerally in a fresh empty directory, with a read-only sandbox, `--ignore-user-config`, and an explicit role-specific output schema. The adapter passes only a small runtime/authentication environment allowlist and redacts credential-shaped diagnostic text. It reuses existing Codex authentication; provider files contain no key. See the official [Codex non-interactive-mode documentation](https://learn.chatgpt.com/docs/non-interactive-mode) for the underlying CLI behavior.
 
 ## Inspect a saved decision
 
