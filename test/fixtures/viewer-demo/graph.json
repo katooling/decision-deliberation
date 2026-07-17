@@ -1,0 +1,2260 @@
+{
+  "schemaVersion": 1,
+  "runId": "demo",
+  "request": {
+    "schemaVersion": 1,
+    "title": "Choose a delivery strategy",
+    "decisionStatement": "Choose the strongest complete strategy after exploring two path-dependent decision levels.",
+    "context": "A deterministic demonstration of exhaustive branch expansion and hindsight reduction.",
+    "scope": {
+      "inScope": [
+        "Strategies A, B, and C",
+        "Follow-up modes D, E, and F"
+      ],
+      "outOfScope": [
+        "Automatic execution"
+      ],
+      "constraints": [
+        "Every admitted option must be explored"
+      ]
+    },
+    "criteria": [
+      {
+        "key": "quality",
+        "label": "Quality",
+        "description": "Expected outcome quality.",
+        "weight": 0.6,
+        "zeroAnchor": "Unacceptable outcome",
+        "oneAnchor": "Best attainable outcome"
+      },
+      {
+        "key": "resilience",
+        "label": "Resilience",
+        "description": "Ability to remain strong under adverse conditions.",
+        "weight": 0.4,
+        "zeroAnchor": "Fragile",
+        "oneAnchor": "Highly resilient"
+      }
+    ]
+  },
+  "config": {
+    "schemaVersion": 1,
+    "completion": "coverage",
+    "traversal": "bfs",
+    "questionPipeline": {
+      "proposerCount": 3,
+      "reviewerCount": 1,
+      "synthesizerCount": 1
+    },
+    "options": {
+      "min": 2,
+      "target": 3,
+      "max": 3
+    },
+    "limits": {
+      "maxDepth": 3,
+      "maxNodes": 100,
+      "maxQuestions": 20,
+      "maxAgentCalls": 200
+    },
+    "concurrency": 4,
+    "maxAttemptsPerCall": 2,
+    "evaluatorCount": 3,
+    "confidencePenalty": 0
+  },
+  "rootBranchId": "branch_root",
+  "branches": {
+    "branch_root": {
+      "id": "branch_root",
+      "parentId": null,
+      "depth": 0,
+      "path": [],
+      "branchStateHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "status": "expanded",
+      "createdOrdinal": 0,
+      "selectedBy": null,
+      "expandedByQuestionId": "question_c4ff6435d228ec669609fd0b",
+      "terminalReason": null,
+      "conclusion": null,
+      "evaluations": [],
+      "failure": null
+    },
+    "branch_bb2bd34e540069bcc49c975e": {
+      "id": "branch_bb2bd34e540069bcc49c975e",
+      "parentId": "branch_root",
+      "depth": 1,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "a",
+          "optionLabel": "Option A",
+          "optionDescription": "Commit to option A.",
+          "expectedConsequences": [
+            "The path now includes A."
+          ],
+          "assumptions": [
+            "Option A remains feasible."
+          ],
+          "tradeoffs": [
+            "Option A excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        }
+      ],
+      "branchStateHash": "f823d881bacc64f4ce7b4696fedd521040498173a711d00277881239cc377202",
+      "status": "expanded",
+      "createdOrdinal": 1,
+      "selectedBy": {
+        "questionId": "question_c4ff6435d228ec669609fd0b",
+        "optionKey": "a",
+        "optionOrdinal": 0
+      },
+      "expandedByQuestionId": "question_0f26e0294c74d73b49c8e3e1",
+      "terminalReason": null,
+      "conclusion": null,
+      "evaluations": [],
+      "failure": null
+    },
+    "branch_fd21530b8713df51d8eecfcc": {
+      "id": "branch_fd21530b8713df51d8eecfcc",
+      "parentId": "branch_root",
+      "depth": 1,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "b",
+          "optionLabel": "Option B",
+          "optionDescription": "Commit to option B.",
+          "expectedConsequences": [
+            "The path now includes B."
+          ],
+          "assumptions": [
+            "Option B remains feasible."
+          ],
+          "tradeoffs": [
+            "Option B excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "1612e4f7acf5fffd5121fab899fc21ac99efa0a41c4bb963ca39c5bc9e1261fb",
+      "status": "expanded",
+      "createdOrdinal": 2,
+      "selectedBy": {
+        "questionId": "question_c4ff6435d228ec669609fd0b",
+        "optionKey": "b",
+        "optionOrdinal": 1
+      },
+      "expandedByQuestionId": "question_4e117c35b7de81c27cab08fe",
+      "terminalReason": null,
+      "conclusion": null,
+      "evaluations": [],
+      "failure": null
+    },
+    "branch_537922a19bce56327d4836ec": {
+      "id": "branch_537922a19bce56327d4836ec",
+      "parentId": "branch_root",
+      "depth": 1,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "c",
+          "optionLabel": "Option C",
+          "optionDescription": "Commit to option C.",
+          "expectedConsequences": [
+            "The path now includes C."
+          ],
+          "assumptions": [
+            "Option C remains feasible."
+          ],
+          "tradeoffs": [
+            "Option C excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "0b6b8a1f54abb1a9fb1eef13ee867e6654f40da29f34111abc9a092296125e55",
+      "status": "expanded",
+      "createdOrdinal": 3,
+      "selectedBy": {
+        "questionId": "question_c4ff6435d228ec669609fd0b",
+        "optionKey": "c",
+        "optionOrdinal": 2
+      },
+      "expandedByQuestionId": "question_78cbb02a10fd83962f93af68",
+      "terminalReason": null,
+      "conclusion": null,
+      "evaluations": [],
+      "failure": null
+    },
+    "branch_0b633c6c8c601f988b1d403b": {
+      "id": "branch_0b633c6c8c601f988b1d403b",
+      "parentId": "branch_bb2bd34e540069bcc49c975e",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "a",
+          "optionLabel": "Option A",
+          "optionDescription": "Commit to option A.",
+          "expectedConsequences": [
+            "The path now includes A."
+          ],
+          "assumptions": [
+            "Option A remains feasible."
+          ],
+          "tradeoffs": [
+            "Option A excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        },
+        {
+          "questionId": "question_0f26e0294c74d73b49c8e3e1",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option A use?",
+          "optionKey": "d",
+          "optionLabel": "Option D",
+          "optionDescription": "Commit to option D.",
+          "expectedConsequences": [
+            "The path now includes D."
+          ],
+          "assumptions": [
+            "Option D remains feasible."
+          ],
+          "tradeoffs": [
+            "Option D excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        }
+      ],
+      "branchStateHash": "5b959ff0694a0c561ca8604ee2a21f8784e540be9490dafcf89247387d977290",
+      "status": "terminal",
+      "createdOrdinal": 4,
+      "selectedBy": {
+        "questionId": "question_0f26e0294c74d73b49c8e3e1",
+        "optionKey": "d",
+        "optionOrdinal": 0
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path AD is fully specified.",
+        "recommendation": "Adopt path AD.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_0366f73e8161f10bed971e7c",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AD is fully specified.",
+              "recommendation": "Adopt path AD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.55,
+                "rationale": "Fixture quality for AD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.6000000000000001,
+                "rationale": "Fixture resilience for AD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_757074cfb4d90fa3f77e6294",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AD is fully specified.",
+              "recommendation": "Adopt path AD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.55,
+                "rationale": "Fixture quality for AD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.6000000000000001,
+                "rationale": "Fixture resilience for AD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_54a992475690c0fad7561c2d",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AD is fully specified.",
+              "recommendation": "Adopt path AD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.55,
+                "rationale": "Fixture quality for AD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.6000000000000001,
+                "rationale": "Fixture resilience for AD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_56499284f5fe8ea6884521ff": {
+      "id": "branch_56499284f5fe8ea6884521ff",
+      "parentId": "branch_bb2bd34e540069bcc49c975e",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "a",
+          "optionLabel": "Option A",
+          "optionDescription": "Commit to option A.",
+          "expectedConsequences": [
+            "The path now includes A."
+          ],
+          "assumptions": [
+            "Option A remains feasible."
+          ],
+          "tradeoffs": [
+            "Option A excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        },
+        {
+          "questionId": "question_0f26e0294c74d73b49c8e3e1",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option A use?",
+          "optionKey": "e",
+          "optionLabel": "Option E",
+          "optionDescription": "Commit to option E.",
+          "expectedConsequences": [
+            "The path now includes E."
+          ],
+          "assumptions": [
+            "Option E remains feasible."
+          ],
+          "tradeoffs": [
+            "Option E excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "609a4652826d54ea2f43ef9985561906f913c1b8f764f3291ea4d7f8ee95c96c",
+      "status": "terminal",
+      "createdOrdinal": 5,
+      "selectedBy": {
+        "questionId": "question_0f26e0294c74d73b49c8e3e1",
+        "optionKey": "e",
+        "optionOrdinal": 1
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path AE is fully specified.",
+        "recommendation": "Adopt path AE.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_393196814bc984ef8f6048e6",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AE is fully specified.",
+              "recommendation": "Adopt path AE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.58,
+                "rationale": "Fixture quality for AE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.63,
+                "rationale": "Fixture resilience for AE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_85d93a5478816f78b7b0d6b3",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AE is fully specified.",
+              "recommendation": "Adopt path AE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.58,
+                "rationale": "Fixture quality for AE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.63,
+                "rationale": "Fixture resilience for AE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_100df7d20d4bed7957297b29",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AE is fully specified.",
+              "recommendation": "Adopt path AE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.58,
+                "rationale": "Fixture quality for AE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.63,
+                "rationale": "Fixture resilience for AE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_592681feac61d83c404e888d": {
+      "id": "branch_592681feac61d83c404e888d",
+      "parentId": "branch_bb2bd34e540069bcc49c975e",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "a",
+          "optionLabel": "Option A",
+          "optionDescription": "Commit to option A.",
+          "expectedConsequences": [
+            "The path now includes A."
+          ],
+          "assumptions": [
+            "Option A remains feasible."
+          ],
+          "tradeoffs": [
+            "Option A excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        },
+        {
+          "questionId": "question_0f26e0294c74d73b49c8e3e1",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option A use?",
+          "optionKey": "f",
+          "optionLabel": "Option F",
+          "optionDescription": "Commit to option F.",
+          "expectedConsequences": [
+            "The path now includes F."
+          ],
+          "assumptions": [
+            "Option F remains feasible."
+          ],
+          "tradeoffs": [
+            "Option F excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "11627d40b9a59b047512414fd5a5e9202fa55d9ac6a6c84a428a1ba02a3831c4",
+      "status": "terminal",
+      "createdOrdinal": 6,
+      "selectedBy": {
+        "questionId": "question_0f26e0294c74d73b49c8e3e1",
+        "optionKey": "f",
+        "optionOrdinal": 2
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path AF is fully specified.",
+        "recommendation": "Adopt path AF.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_d743905205c0ab7b687f98b2",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AF is fully specified.",
+              "recommendation": "Adopt path AF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.6,
+                "rationale": "Fixture quality for AF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.65,
+                "rationale": "Fixture resilience for AF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_4154384d244dc1d51f76539b",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AF is fully specified.",
+              "recommendation": "Adopt path AF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.6,
+                "rationale": "Fixture quality for AF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.65,
+                "rationale": "Fixture resilience for AF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_47c0dff11b89c0453d573365",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path AF is fully specified.",
+              "recommendation": "Adopt path AF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.6,
+                "rationale": "Fixture quality for AF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.65,
+                "rationale": "Fixture resilience for AF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "AF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_8e6b370307f03ca563a8df94": {
+      "id": "branch_8e6b370307f03ca563a8df94",
+      "parentId": "branch_fd21530b8713df51d8eecfcc",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "b",
+          "optionLabel": "Option B",
+          "optionDescription": "Commit to option B.",
+          "expectedConsequences": [
+            "The path now includes B."
+          ],
+          "assumptions": [
+            "Option B remains feasible."
+          ],
+          "tradeoffs": [
+            "Option B excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_4e117c35b7de81c27cab08fe",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option B use?",
+          "optionKey": "d",
+          "optionLabel": "Option D",
+          "optionDescription": "Commit to option D.",
+          "expectedConsequences": [
+            "The path now includes D."
+          ],
+          "assumptions": [
+            "Option D remains feasible."
+          ],
+          "tradeoffs": [
+            "Option D excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        }
+      ],
+      "branchStateHash": "f074204068423622f81109e92019474e8ffaad4539f2f5393c1348e6601ddad4",
+      "status": "terminal",
+      "createdOrdinal": 7,
+      "selectedBy": {
+        "questionId": "question_4e117c35b7de81c27cab08fe",
+        "optionKey": "d",
+        "optionOrdinal": 0
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path BD is fully specified.",
+        "recommendation": "Adopt path BD.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_95f52936396becdae14a9dd7",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BD is fully specified.",
+              "recommendation": "Adopt path BD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.62,
+                "rationale": "Fixture quality for BD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.67,
+                "rationale": "Fixture resilience for BD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_044d8a8951942b59b7c0aa84",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BD is fully specified.",
+              "recommendation": "Adopt path BD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.62,
+                "rationale": "Fixture quality for BD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.67,
+                "rationale": "Fixture resilience for BD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_064df55421eda568415bebb1",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BD is fully specified.",
+              "recommendation": "Adopt path BD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.62,
+                "rationale": "Fixture quality for BD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.67,
+                "rationale": "Fixture resilience for BD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_0ede5d2250766ce8fd26c57f": {
+      "id": "branch_0ede5d2250766ce8fd26c57f",
+      "parentId": "branch_fd21530b8713df51d8eecfcc",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "b",
+          "optionLabel": "Option B",
+          "optionDescription": "Commit to option B.",
+          "expectedConsequences": [
+            "The path now includes B."
+          ],
+          "assumptions": [
+            "Option B remains feasible."
+          ],
+          "tradeoffs": [
+            "Option B excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_4e117c35b7de81c27cab08fe",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option B use?",
+          "optionKey": "e",
+          "optionLabel": "Option E",
+          "optionDescription": "Commit to option E.",
+          "expectedConsequences": [
+            "The path now includes E."
+          ],
+          "assumptions": [
+            "Option E remains feasible."
+          ],
+          "tradeoffs": [
+            "Option E excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "641dd6024036790f375add40dcf4085ee2db8fd46e025b64a41a77d6433cc69e",
+      "status": "terminal",
+      "createdOrdinal": 8,
+      "selectedBy": {
+        "questionId": "question_4e117c35b7de81c27cab08fe",
+        "optionKey": "e",
+        "optionOrdinal": 1
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path BE is fully specified.",
+        "recommendation": "Adopt path BE.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_043ed90af41db375a8a4e1f3",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BE is fully specified.",
+              "recommendation": "Adopt path BE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.68,
+                "rationale": "Fixture quality for BE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.7300000000000001,
+                "rationale": "Fixture resilience for BE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_305ac9b64a31f41a4f704021",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BE is fully specified.",
+              "recommendation": "Adopt path BE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.68,
+                "rationale": "Fixture quality for BE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.7300000000000001,
+                "rationale": "Fixture resilience for BE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_6a09e9b3e7e2daf52ec5c258",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BE is fully specified.",
+              "recommendation": "Adopt path BE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.68,
+                "rationale": "Fixture quality for BE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.7300000000000001,
+                "rationale": "Fixture resilience for BE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_4f3c1e3ae5a94602227b57fd": {
+      "id": "branch_4f3c1e3ae5a94602227b57fd",
+      "parentId": "branch_fd21530b8713df51d8eecfcc",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "b",
+          "optionLabel": "Option B",
+          "optionDescription": "Commit to option B.",
+          "expectedConsequences": [
+            "The path now includes B."
+          ],
+          "assumptions": [
+            "Option B remains feasible."
+          ],
+          "tradeoffs": [
+            "Option B excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_4e117c35b7de81c27cab08fe",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option B use?",
+          "optionKey": "f",
+          "optionLabel": "Option F",
+          "optionDescription": "Commit to option F.",
+          "expectedConsequences": [
+            "The path now includes F."
+          ],
+          "assumptions": [
+            "Option F remains feasible."
+          ],
+          "tradeoffs": [
+            "Option F excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "5e420704a788a1dc729da835d8f2345a7c2a1cc9c5d1699d5a64290f47003b2e",
+      "status": "terminal",
+      "createdOrdinal": 9,
+      "selectedBy": {
+        "questionId": "question_4e117c35b7de81c27cab08fe",
+        "optionKey": "f",
+        "optionOrdinal": 2
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path BF is fully specified.",
+        "recommendation": "Adopt path BF.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_f050f7e113ad3f2e88abe0fb",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BF is fully specified.",
+              "recommendation": "Adopt path BF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.72,
+                "rationale": "Fixture quality for BF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.77,
+                "rationale": "Fixture resilience for BF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_089f1692d6d530a8a705dd50",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BF is fully specified.",
+              "recommendation": "Adopt path BF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.72,
+                "rationale": "Fixture quality for BF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.77,
+                "rationale": "Fixture resilience for BF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_d70552223f353ec28c33a083",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path BF is fully specified.",
+              "recommendation": "Adopt path BF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.72,
+                "rationale": "Fixture quality for BF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.77,
+                "rationale": "Fixture resilience for BF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "BF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_7eb5f72e004d499adc7bee07": {
+      "id": "branch_7eb5f72e004d499adc7bee07",
+      "parentId": "branch_537922a19bce56327d4836ec",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "c",
+          "optionLabel": "Option C",
+          "optionDescription": "Commit to option C.",
+          "expectedConsequences": [
+            "The path now includes C."
+          ],
+          "assumptions": [
+            "Option C remains feasible."
+          ],
+          "tradeoffs": [
+            "Option C excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_78cbb02a10fd83962f93af68",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option C use?",
+          "optionKey": "d",
+          "optionLabel": "Option D",
+          "optionDescription": "Commit to option D.",
+          "expectedConsequences": [
+            "The path now includes D."
+          ],
+          "assumptions": [
+            "Option D remains feasible."
+          ],
+          "tradeoffs": [
+            "Option D excludes its siblings."
+          ],
+          "wasQuestionRecommendation": true
+        }
+      ],
+      "branchStateHash": "7d35faea0689dd0c27cc1f520d9ab2377cd26b6f68192ae8fcf0ee8c8ecf4a6b",
+      "status": "terminal",
+      "createdOrdinal": 10,
+      "selectedBy": {
+        "questionId": "question_78cbb02a10fd83962f93af68",
+        "optionKey": "d",
+        "optionOrdinal": 0
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path CD is fully specified.",
+        "recommendation": "Adopt path CD.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_a0d7d943d9932e7c817c4bc5",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CD is fully specified.",
+              "recommendation": "Adopt path CD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.7,
+                "rationale": "Fixture quality for CD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.75,
+                "rationale": "Fixture resilience for CD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_355e0d65d809a01d2e4a4e7a",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CD is fully specified.",
+              "recommendation": "Adopt path CD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.7,
+                "rationale": "Fixture quality for CD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.75,
+                "rationale": "Fixture resilience for CD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_1fa8bc3aa9f9222f24a77775",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CD is fully specified.",
+              "recommendation": "Adopt path CD.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.7,
+                "rationale": "Fixture quality for CD."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.75,
+                "rationale": "Fixture resilience for CD."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CD has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_55fb15e8fbdee5b719374624": {
+      "id": "branch_55fb15e8fbdee5b719374624",
+      "parentId": "branch_537922a19bce56327d4836ec",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "c",
+          "optionLabel": "Option C",
+          "optionDescription": "Commit to option C.",
+          "expectedConsequences": [
+            "The path now includes C."
+          ],
+          "assumptions": [
+            "Option C remains feasible."
+          ],
+          "tradeoffs": [
+            "Option C excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_78cbb02a10fd83962f93af68",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option C use?",
+          "optionKey": "e",
+          "optionLabel": "Option E",
+          "optionDescription": "Commit to option E.",
+          "expectedConsequences": [
+            "The path now includes E."
+          ],
+          "assumptions": [
+            "Option E remains feasible."
+          ],
+          "tradeoffs": [
+            "Option E excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "e045f0f1961cc0850ac7095164f12048715acd8c6e0902e19772a75012426442",
+      "status": "terminal",
+      "createdOrdinal": 11,
+      "selectedBy": {
+        "questionId": "question_78cbb02a10fd83962f93af68",
+        "optionKey": "e",
+        "optionOrdinal": 1
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path CE is fully specified.",
+        "recommendation": "Adopt path CE.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_9b356ca13f672d6567b7e975",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CE is fully specified.",
+              "recommendation": "Adopt path CE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.82,
+                "rationale": "Fixture quality for CE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.87,
+                "rationale": "Fixture resilience for CE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_167ad776f7eb385d8eb1b05c",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CE is fully specified.",
+              "recommendation": "Adopt path CE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.82,
+                "rationale": "Fixture quality for CE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.87,
+                "rationale": "Fixture resilience for CE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_058c7f38d0cfda677e2b9473",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CE is fully specified.",
+              "recommendation": "Adopt path CE.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 0.82,
+                "rationale": "Fixture quality for CE."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.87,
+                "rationale": "Fixture resilience for CE."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CE has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    },
+    "branch_74ce71dc5214faa8be3921e1": {
+      "id": "branch_74ce71dc5214faa8be3921e1",
+      "parentId": "branch_537922a19bce56327d4836ec",
+      "depth": 2,
+      "path": [
+        {
+          "questionId": "question_c4ff6435d228ec669609fd0b",
+          "questionSemanticKey": "primary_strategy",
+          "questionText": "Which primary strategy should we follow?",
+          "optionKey": "c",
+          "optionLabel": "Option C",
+          "optionDescription": "Commit to option C.",
+          "expectedConsequences": [
+            "The path now includes C."
+          ],
+          "assumptions": [
+            "Option C remains feasible."
+          ],
+          "tradeoffs": [
+            "Option C excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        },
+        {
+          "questionId": "question_78cbb02a10fd83962f93af68",
+          "questionSemanticKey": "follow_up_mode",
+          "questionText": "Which follow-up mode should strategy Option C use?",
+          "optionKey": "f",
+          "optionLabel": "Option F",
+          "optionDescription": "Commit to option F.",
+          "expectedConsequences": [
+            "The path now includes F."
+          ],
+          "assumptions": [
+            "Option F remains feasible."
+          ],
+          "tradeoffs": [
+            "Option F excludes its siblings."
+          ],
+          "wasQuestionRecommendation": false
+        }
+      ],
+      "branchStateHash": "1e3e0719089cec244b5b8a0084457befed391ff5f1d92797871dd0177c10803c",
+      "status": "terminal",
+      "createdOrdinal": 12,
+      "selectedBy": {
+        "questionId": "question_78cbb02a10fd83962f93af68",
+        "optionKey": "f",
+        "optionOrdinal": 2
+      },
+      "expandedByQuestionId": null,
+      "terminalReason": "resolved",
+      "conclusion": {
+        "summary": "Path CF is fully specified.",
+        "recommendation": "Adopt path CF.",
+        "conditions": [
+          "The scoped assumptions remain true."
+        ],
+        "caveats": [],
+        "unresolvedQuestions": []
+      },
+      "evaluations": [
+        {
+          "id": "evaluation_0303fc480054376bacb8e2a7",
+          "evaluatorOrdinal": 0,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CF is fully specified.",
+              "recommendation": "Adopt path CF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 1,
+                "rationale": "Fixture quality for CF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.95,
+                "rationale": "Fixture resilience for CF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_7ffd39d29a03be5f89ec7b23",
+          "evaluatorOrdinal": 1,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CF is fully specified.",
+              "recommendation": "Adopt path CF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 1,
+                "rationale": "Fixture quality for CF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.95,
+                "rationale": "Fixture resilience for CF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        },
+        {
+          "id": "evaluation_f583e0be4959f8bc6211ee4e",
+          "evaluatorOrdinal": 2,
+          "evaluation": {
+            "schemaVersion": 1,
+            "conclusion": {
+              "summary": "Path CF is fully specified.",
+              "recommendation": "Adopt path CF.",
+              "conditions": [
+                "The scoped assumptions remain true."
+              ],
+              "caveats": [],
+              "unresolvedQuestions": []
+            },
+            "criterionScores": [
+              {
+                "criterionKey": "quality",
+                "score": 1,
+                "rationale": "Fixture quality for CF."
+              },
+              {
+                "criterionKey": "resilience",
+                "score": 0.95,
+                "rationale": "Fixture resilience for CF."
+              }
+            ],
+            "confidence": 0.95,
+            "evidence": [
+              {
+                "claim": "CF has the recorded fixture outcome.",
+                "source": "demo fixture",
+                "strength": "strong"
+              }
+            ],
+            "assumptions": [
+              "The demo utility table is authoritative."
+            ],
+            "caveats": []
+          }
+        }
+      ],
+      "failure": null
+    }
+  },
+  "expansions": {
+    "expansion_67fd69e70582473895ca4403": {
+      "id": "expansion_67fd69e70582473895ca4403",
+      "questionId": "question_c4ff6435d228ec669609fd0b",
+      "branchId": "branch_root",
+      "question": {
+        "semanticKey": "primary_strategy",
+        "text": "Which primary strategy should we follow?",
+        "rationale": "The primary strategy determines the follow-up context.",
+        "resolves": [
+          "primary strategy"
+        ],
+        "options": [
+          {
+            "key": "a",
+            "label": "Option A",
+            "description": "Commit to option A.",
+            "expectedConsequences": [
+              "The path now includes A."
+            ],
+            "assumptions": [
+              "Option A remains feasible."
+            ],
+            "tradeoffs": [
+              "Option A excludes its siblings."
+            ]
+          },
+          {
+            "key": "b",
+            "label": "Option B",
+            "description": "Commit to option B.",
+            "expectedConsequences": [
+              "The path now includes B."
+            ],
+            "assumptions": [
+              "Option B remains feasible."
+            ],
+            "tradeoffs": [
+              "Option B excludes its siblings."
+            ]
+          },
+          {
+            "key": "c",
+            "label": "Option C",
+            "description": "Commit to option C.",
+            "expectedConsequences": [
+              "The path now includes C."
+            ],
+            "assumptions": [
+              "Option C remains feasible."
+            ],
+            "tradeoffs": [
+              "Option C excludes its siblings."
+            ]
+          }
+        ],
+        "recommendation": {
+          "optionKey": "a",
+          "reason": "A looks strongest before its downstream consequences are known.",
+          "confidence": 0.7
+        },
+        "coverageRationale": "A, B, and C are the complete scoped primary strategies.",
+        "atomicityRationale": "Each option makes one primary commitment.",
+        "exclusivityRationale": "Only one primary strategy may be selected."
+      },
+      "childBranchIds": [
+        "branch_bb2bd34e540069bcc49c975e",
+        "branch_fd21530b8713df51d8eecfcc",
+        "branch_537922a19bce56327d4836ec"
+      ]
+    },
+    "expansion_c290790f5397a19e07bb4995": {
+      "id": "expansion_c290790f5397a19e07bb4995",
+      "questionId": "question_0f26e0294c74d73b49c8e3e1",
+      "branchId": "branch_bb2bd34e540069bcc49c975e",
+      "question": {
+        "semanticKey": "follow_up_mode",
+        "text": "Which follow-up mode should strategy Option A use?",
+        "rationale": "The follow-up determines the complete outcome.",
+        "resolves": [
+          "follow-up mode"
+        ],
+        "options": [
+          {
+            "key": "d",
+            "label": "Option D",
+            "description": "Commit to option D.",
+            "expectedConsequences": [
+              "The path now includes D."
+            ],
+            "assumptions": [
+              "Option D remains feasible."
+            ],
+            "tradeoffs": [
+              "Option D excludes its siblings."
+            ]
+          },
+          {
+            "key": "e",
+            "label": "Option E",
+            "description": "Commit to option E.",
+            "expectedConsequences": [
+              "The path now includes E."
+            ],
+            "assumptions": [
+              "Option E remains feasible."
+            ],
+            "tradeoffs": [
+              "Option E excludes its siblings."
+            ]
+          },
+          {
+            "key": "f",
+            "label": "Option F",
+            "description": "Commit to option F.",
+            "expectedConsequences": [
+              "The path now includes F."
+            ],
+            "assumptions": [
+              "Option F remains feasible."
+            ],
+            "tradeoffs": [
+              "Option F excludes its siblings."
+            ]
+          }
+        ],
+        "recommendation": {
+          "optionKey": "d",
+          "reason": "D looks safest locally.",
+          "confidence": 0.65
+        },
+        "coverageRationale": "D, E, and F are the complete scoped follow-up modes.",
+        "atomicityRationale": "Each option selects one follow-up mode.",
+        "exclusivityRationale": "Only one follow-up mode may be selected."
+      },
+      "childBranchIds": [
+        "branch_0b633c6c8c601f988b1d403b",
+        "branch_56499284f5fe8ea6884521ff",
+        "branch_592681feac61d83c404e888d"
+      ]
+    },
+    "expansion_1026d325e2b25b6c1a75eab9": {
+      "id": "expansion_1026d325e2b25b6c1a75eab9",
+      "questionId": "question_4e117c35b7de81c27cab08fe",
+      "branchId": "branch_fd21530b8713df51d8eecfcc",
+      "question": {
+        "semanticKey": "follow_up_mode",
+        "text": "Which follow-up mode should strategy Option B use?",
+        "rationale": "The follow-up determines the complete outcome.",
+        "resolves": [
+          "follow-up mode"
+        ],
+        "options": [
+          {
+            "key": "d",
+            "label": "Option D",
+            "description": "Commit to option D.",
+            "expectedConsequences": [
+              "The path now includes D."
+            ],
+            "assumptions": [
+              "Option D remains feasible."
+            ],
+            "tradeoffs": [
+              "Option D excludes its siblings."
+            ]
+          },
+          {
+            "key": "e",
+            "label": "Option E",
+            "description": "Commit to option E.",
+            "expectedConsequences": [
+              "The path now includes E."
+            ],
+            "assumptions": [
+              "Option E remains feasible."
+            ],
+            "tradeoffs": [
+              "Option E excludes its siblings."
+            ]
+          },
+          {
+            "key": "f",
+            "label": "Option F",
+            "description": "Commit to option F.",
+            "expectedConsequences": [
+              "The path now includes F."
+            ],
+            "assumptions": [
+              "Option F remains feasible."
+            ],
+            "tradeoffs": [
+              "Option F excludes its siblings."
+            ]
+          }
+        ],
+        "recommendation": {
+          "optionKey": "d",
+          "reason": "D looks safest locally.",
+          "confidence": 0.65
+        },
+        "coverageRationale": "D, E, and F are the complete scoped follow-up modes.",
+        "atomicityRationale": "Each option selects one follow-up mode.",
+        "exclusivityRationale": "Only one follow-up mode may be selected."
+      },
+      "childBranchIds": [
+        "branch_8e6b370307f03ca563a8df94",
+        "branch_0ede5d2250766ce8fd26c57f",
+        "branch_4f3c1e3ae5a94602227b57fd"
+      ]
+    },
+    "expansion_b259936c88644ffaddb0ef33": {
+      "id": "expansion_b259936c88644ffaddb0ef33",
+      "questionId": "question_78cbb02a10fd83962f93af68",
+      "branchId": "branch_537922a19bce56327d4836ec",
+      "question": {
+        "semanticKey": "follow_up_mode",
+        "text": "Which follow-up mode should strategy Option C use?",
+        "rationale": "The follow-up determines the complete outcome.",
+        "resolves": [
+          "follow-up mode"
+        ],
+        "options": [
+          {
+            "key": "d",
+            "label": "Option D",
+            "description": "Commit to option D.",
+            "expectedConsequences": [
+              "The path now includes D."
+            ],
+            "assumptions": [
+              "Option D remains feasible."
+            ],
+            "tradeoffs": [
+              "Option D excludes its siblings."
+            ]
+          },
+          {
+            "key": "e",
+            "label": "Option E",
+            "description": "Commit to option E.",
+            "expectedConsequences": [
+              "The path now includes E."
+            ],
+            "assumptions": [
+              "Option E remains feasible."
+            ],
+            "tradeoffs": [
+              "Option E excludes its siblings."
+            ]
+          },
+          {
+            "key": "f",
+            "label": "Option F",
+            "description": "Commit to option F.",
+            "expectedConsequences": [
+              "The path now includes F."
+            ],
+            "assumptions": [
+              "Option F remains feasible."
+            ],
+            "tradeoffs": [
+              "Option F excludes its siblings."
+            ]
+          }
+        ],
+        "recommendation": {
+          "optionKey": "d",
+          "reason": "D looks safest locally.",
+          "confidence": 0.65
+        },
+        "coverageRationale": "D, E, and F are the complete scoped follow-up modes.",
+        "atomicityRationale": "Each option selects one follow-up mode.",
+        "exclusivityRationale": "Only one follow-up mode may be selected."
+      },
+      "childBranchIds": [
+        "branch_7eb5f72e004d499adc7bee07",
+        "branch_55fb15e8fbdee5b719374624",
+        "branch_74ce71dc5214faa8be3921e1"
+      ]
+    }
+  },
+  "edges": [
+    {
+      "id": "edge_c1a7ea1049bcb27a4d14a105",
+      "parentBranchId": "branch_root",
+      "childBranchId": "branch_bb2bd34e540069bcc49c975e",
+      "questionId": "question_c4ff6435d228ec669609fd0b",
+      "optionKey": "a",
+      "ordinal": 0
+    },
+    {
+      "id": "edge_2481d5665aacf6e4f86e1dd4",
+      "parentBranchId": "branch_root",
+      "childBranchId": "branch_fd21530b8713df51d8eecfcc",
+      "questionId": "question_c4ff6435d228ec669609fd0b",
+      "optionKey": "b",
+      "ordinal": 1
+    },
+    {
+      "id": "edge_8b87743c18f13edd8b2abc84",
+      "parentBranchId": "branch_root",
+      "childBranchId": "branch_537922a19bce56327d4836ec",
+      "questionId": "question_c4ff6435d228ec669609fd0b",
+      "optionKey": "c",
+      "ordinal": 2
+    },
+    {
+      "id": "edge_b945997c72ef6f606f242c6e",
+      "parentBranchId": "branch_bb2bd34e540069bcc49c975e",
+      "childBranchId": "branch_0b633c6c8c601f988b1d403b",
+      "questionId": "question_0f26e0294c74d73b49c8e3e1",
+      "optionKey": "d",
+      "ordinal": 0
+    },
+    {
+      "id": "edge_fbf07dcb0941d798461115f7",
+      "parentBranchId": "branch_bb2bd34e540069bcc49c975e",
+      "childBranchId": "branch_56499284f5fe8ea6884521ff",
+      "questionId": "question_0f26e0294c74d73b49c8e3e1",
+      "optionKey": "e",
+      "ordinal": 1
+    },
+    {
+      "id": "edge_6c661514765b29654037ae47",
+      "parentBranchId": "branch_bb2bd34e540069bcc49c975e",
+      "childBranchId": "branch_592681feac61d83c404e888d",
+      "questionId": "question_0f26e0294c74d73b49c8e3e1",
+      "optionKey": "f",
+      "ordinal": 2
+    },
+    {
+      "id": "edge_3aba494e0743a8515190ea05",
+      "parentBranchId": "branch_fd21530b8713df51d8eecfcc",
+      "childBranchId": "branch_8e6b370307f03ca563a8df94",
+      "questionId": "question_4e117c35b7de81c27cab08fe",
+      "optionKey": "d",
+      "ordinal": 0
+    },
+    {
+      "id": "edge_8e6faaa8d4acc6f56a02f877",
+      "parentBranchId": "branch_fd21530b8713df51d8eecfcc",
+      "childBranchId": "branch_0ede5d2250766ce8fd26c57f",
+      "questionId": "question_4e117c35b7de81c27cab08fe",
+      "optionKey": "e",
+      "ordinal": 1
+    },
+    {
+      "id": "edge_dce7692b135be57cca4f5b86",
+      "parentBranchId": "branch_fd21530b8713df51d8eecfcc",
+      "childBranchId": "branch_4f3c1e3ae5a94602227b57fd",
+      "questionId": "question_4e117c35b7de81c27cab08fe",
+      "optionKey": "f",
+      "ordinal": 2
+    },
+    {
+      "id": "edge_cbae3d23d61b9fde766c6a46",
+      "parentBranchId": "branch_537922a19bce56327d4836ec",
+      "childBranchId": "branch_7eb5f72e004d499adc7bee07",
+      "questionId": "question_78cbb02a10fd83962f93af68",
+      "optionKey": "d",
+      "ordinal": 0
+    },
+    {
+      "id": "edge_7bb2719e31e7be3d59f1dc22",
+      "parentBranchId": "branch_537922a19bce56327d4836ec",
+      "childBranchId": "branch_55fb15e8fbdee5b719374624",
+      "questionId": "question_78cbb02a10fd83962f93af68",
+      "optionKey": "e",
+      "ordinal": 1
+    },
+    {
+      "id": "edge_2b36128530c2148b1f904630",
+      "parentBranchId": "branch_537922a19bce56327d4836ec",
+      "childBranchId": "branch_74ce71dc5214faa8be3921e1",
+      "questionId": "question_78cbb02a10fd83962f93af68",
+      "optionKey": "f",
+      "ordinal": 2
+    }
+  ],
+  "usage": {
+    "questions": 4,
+    "agentCalls": 92,
+    "retries": 0,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUsd": 0,
+    "wallTimeMs": 0
+  },
+  "completion": {
+    "classification": "coverage_complete",
+    "reasons": [
+      "frontier_empty"
+    ]
+  },
+  "approval": null,
+  "eventsApplied": 77,
+  "lastEventId": "event_83a2a356141ac13f1c698b6f"
+}

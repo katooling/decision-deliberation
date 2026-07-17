@@ -8,7 +8,7 @@ import type { DecisionState } from "../src/domain/state.js";
 import { deriveViewerBundle } from "../src/viewer/bundle.js";
 import { layoutHierarchical, layoutRadial } from "../src/viewer/layout.js";
 
-const demoDirectory = join(process.cwd(), "work", "demo-runs-2", "demo");
+const demoDirectory = join(process.cwd(), "test", "fixtures", "viewer-demo");
 
 function loadDemo(): { state: DecisionState; dossier: DecisionDossier } {
   return {

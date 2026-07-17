@@ -73,9 +73,9 @@ Decision Deliberation is a user-facing tool with a CLI and interactive viewer. I
 - [x] Production-only build and package allowlist
 - [x] Source audit for secrets and machine-specific paths
 - [x] Clean-install and CLI smoke-test plan
-- [ ] Public repository created and remote tree verified
-- [ ] GitHub Discussions and private vulnerability reporting enabled
+- [x] Public repository created and remote tree verified
+- [x] GitHub Discussions and private vulnerability reporting enabled
 - [ ] `v0.1.0` release published with tarball and checksum
 - [ ] Hosted CI passes on `main`
 
-The final four boxes are publication-state checks. They must be verified against GitHub after the local release candidate passes.
+The final four boxes are publication-state checks. They are checked only after verification against GitHub.
