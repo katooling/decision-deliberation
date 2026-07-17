@@ -335,8 +335,9 @@ export async function startViewerServer(
       }
       if (options.product !== undefined && pathname.startsWith("/api/product/runs/") && pathname.endsWith("/adr")) {
         const runId = pathname.slice("/api/product/runs/".length, -"/adr".length);
+        const adr = await options.product.exportAdr(runId);
         response.setHeader("content-disposition", `attachment; filename="${runId}.md"`);
-        send(request, response, 200, "text/markdown; charset=utf-8", await options.product.exportAdr(runId));
+        send(request, response, 200, "text/markdown; charset=utf-8", adr);
         return;
       }
       if (pathname === "/api/runs") {

@@ -69,11 +69,17 @@ export function renderDecisionAdr(dossier: DecisionDossier): string {
     lines.push("No scored alternative is available.", "");
   } else {
     for (const alternative of dossier.rankedAlternatives) {
+      const scoreGap = recommendation === null
+        ? null
+        : Math.max(0, (recommendation.score - alternative.score) * 100);
       lines.push(
         `### ${alternative.rank}. ${alternative.recommendation}`,
         "",
         `${alternative.summary} Score: ${percent(alternative.score)}; confidence: ${percent(alternative.confidence)}.`,
         "",
+        ...(scoreGap === null
+          ? []
+          : [`Why it ranked lower: ${scoreGap.toFixed(1)} points behind the recommendation after criteria and confidence adjustment.`, ""]),
         ...list(alternative.caveats, "No additional caveat was recorded."),
         "",
       );

@@ -127,6 +127,7 @@ textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgb(38 74 216 
 .alternative-list article > span { align-items: center; background: var(--blue-soft); border-radius: 50%; color: var(--blue); display: flex; font-family: var(--serif); height: 34px; justify-content: center; width: 34px; }
 .alternative-list h3 { font-family: var(--serif); font-size: 22px; font-weight: 520; margin-bottom: 5px; }
 .alternative-list p { color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+.alternative-list .alternative-comparison { color: var(--ink); font-size: 12px; font-weight: 650; }
 .alternative-list small { color: var(--faint); }
 .two-column-section { display: grid; gap: 60px; grid-template-columns: 1fr 1fr; }
 #evidence-list { display: grid; gap: 12px; }

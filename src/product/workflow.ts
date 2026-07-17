@@ -91,6 +91,7 @@ interface ProductSession extends ProductSessionBase {
   dossier: DecisionDossier | null;
   adr: string | null;
   artifacts: AgentCallArtifact[];
+  nextCallSequence: number;
 }
 
 export class ProductWorkflowError extends Error {
@@ -119,8 +120,10 @@ function request(
   input: unknown,
   contract: string,
 ): AgentRequest {
+  const callSequence = session.nextCallSequence;
+  session.nextCallSequence += 1;
   return {
-    callId: `${session.sessionId}.${role}.${session.answers.length}`,
+    callId: `${session.sessionId}.${role}.${callSequence}`,
     role,
     input,
     contract,
@@ -191,6 +194,7 @@ export class DecisionProduct {
       dossier: null,
       adr: null,
       artifacts: [],
+      nextCallSequence: 1,
     };
     this.sessions.set(session.sessionId, session);
     try {
@@ -210,6 +214,7 @@ export class DecisionProduct {
     const parsed = AnswerInputSchema.safeParse(input);
     if (!parsed.success) throw new ProductWorkflowError(400, z.prettifyError(parsed.error));
     const pendingQuestion = { ...session.question };
+    const pendingReflection = session.reflection;
     session.answers.push({
       question: session.question.text,
       rationale: session.question.rationale,
@@ -222,6 +227,8 @@ export class DecisionProduct {
     } catch (error) {
       session.answers.pop();
       session.question = pendingQuestion;
+      session.reflection = pendingReflection;
+      session.framing = null;
       session.status = "question";
       throw error;
     }
@@ -299,8 +306,8 @@ export class DecisionProduct {
       }, INTERVIEW_CONTRACT),
       schema: DecisionInterviewTurnSchema,
       maxAttempts: this.config.maxAttemptsPerCall,
+      onArtifact: (artifact) => { session.artifacts.push(artifact); },
     });
-    session.artifacts.push(...result.artifacts);
     session.reflection = result.value.reflection;
     if (result.value.ready) {
       await this.frame(session);
@@ -324,8 +331,8 @@ export class DecisionProduct {
       schema: DecisionRequestSchema,
       maxAttempts: this.config.maxAttemptsPerCall,
       semanticValidate: validateFraming,
+      onArtifact: (artifact) => { session.artifacts.push(artifact); },
     });
-    session.artifacts.push(...result.artifacts);
     session.framing = result.value;
     session.status = "ready";
     session.question = null;

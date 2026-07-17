@@ -78,6 +78,16 @@ function percent(value) {
   return Number.isFinite(value) ? `${Math.round(value * 100)}%` : "—";
 }
 
+function completenessLabel(value) {
+  return {
+    coverage_complete: "Complete within bounds",
+    partial_budget_exhausted: "Stopped at decision budget",
+    partial_safety_limit: "Stopped at safety limit",
+    partial_failure: "Stopped after a failed branch",
+    in_progress: "Analysis in progress",
+  }[value] || "Completeness unknown";
+}
+
 function fillList(target, values, empty) {
   target.replaceChildren();
   const source = values.length ? values : [empty];
@@ -131,7 +141,7 @@ function renderResult(result) {
   const recommendation = dossier.recommendation;
   elements.resultTitle.textContent = dossier.title;
   elements.resultStatement.textContent = dossier.decisionStatement;
-  elements.completeness.textContent = dossier.completeness === "coverage_complete" ? "Bounded coverage" : "Partial evidence";
+  elements.completeness.textContent = completenessLabel(dossier.completeness);
   elements.completeness.className = `status-pill ${dossier.completeness === "coverage_complete" ? "complete" : "partial"}`;
   elements.recommendation.textContent = recommendation?.recommendation || "No scored recommendation is available.";
   elements.recommendationSummary.textContent = recommendation?.summary || "The bounded run did not produce a scored conclusion.";
@@ -165,12 +175,21 @@ function renderResult(result) {
     const copy = document.createElement("div");
     const title = document.createElement("h3");
     const summary = document.createElement("p");
+    const comparison = document.createElement("p");
     const score = document.createElement("small");
     rank.textContent = String(alternative.rank);
     title.textContent = alternative.recommendation;
     summary.textContent = alternative.summary;
+    const scoreGap = recommendation && Number.isFinite(recommendation.score) && Number.isFinite(alternative.score)
+      ? Math.max(0, Math.round((recommendation.score - alternative.score) * 100))
+      : null;
+    const caveat = alternative.caveats?.[0];
+    comparison.className = "alternative-comparison";
+    comparison.textContent = scoreGap === null
+      ? caveat || "This path did not produce a comparable score."
+      : `${scoreGap} points behind the recommendation after criteria and confidence adjustment.${caveat ? ` Main caveat: ${caveat}` : ""}`;
     score.textContent = alternative.score === null ? "Not scored" : `${percent(alternative.score)} score · ${percent(alternative.confidence)} confidence`;
-    copy.append(title, summary, score);
+    copy.append(title, summary, comparison, score);
     card.append(rank, copy);
     elements.alternatives.append(card);
   }

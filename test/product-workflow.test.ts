@@ -260,6 +260,55 @@ test("a failed follow-up leaves the same question answerable instead of corrupti
   }
 });
 
+test("failed framing calls remain in persisted provenance with unique invocation IDs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "decision-product-provenance-"));
+  try {
+    const base = productProvider();
+    let failFraming = true;
+    const provider = new ScriptedProvider(async (request) => {
+      if (request.role === "decision-framer" && failFraming) {
+        failFraming = false;
+        return new Error("temporary framing failure");
+      }
+      return base.invoke(request);
+    });
+    const product = new DecisionProduct({
+      provider,
+      store: new FileRunStore(root),
+      config: { ...productConfig, maxAttemptsPerCall: 1 },
+      maxQuestions: 3,
+    });
+
+    const question = await product.begin({ decision: "Which product launch path should we choose?" });
+    await assert.rejects(
+      product.answer(question.sessionId, { answer: "Validate demand this quarter." }),
+      /structured output remained invalid/,
+    );
+    const ready = await product.answer(question.sessionId, { answer: "Validate demand this quarter." });
+    assert.equal(ready.status, "ready");
+    const result = await product.deliberate(question.sessionId);
+
+    const callDirectory = join(root, result.runId, "calls");
+    const artifacts = await Promise.all(
+      (await readdir(callDirectory)).map(async (name) =>
+        JSON.parse(await readFile(join(callDirectory, name), "utf8")) as {
+          artifactId: string;
+          callId: string;
+          valid: boolean;
+          violations: string[];
+        }),
+    );
+    const intakeArtifacts = artifacts.filter((artifact) => artifact.callId.startsWith(question.sessionId));
+    assert.equal(intakeArtifacts.length, 5);
+    assert.equal(new Set(intakeArtifacts.map((artifact) => artifact.artifactId)).size, 5);
+    assert.ok(intakeArtifacts.some(
+      (artifact) => !artifact.valid && artifact.violations.includes("temporary framing failure"),
+    ));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("ADR export keeps recommendation status, alternatives, uncertainty, and approval explicit", () => {
   const dossier = {
     schemaVersion: 1 as const,
@@ -333,6 +382,7 @@ test("ADR export keeps recommendation status, alternatives, uncertainty, and app
   assert.match(adr, /Status: Proposed — awaiting human approval/);
   assert.match(adr, /Partial evidence: partial_budget_exhausted/);
   assert.match(adr, /Prototype the dashboard first/);
+  assert.match(adr, /Why it ranked lower: 18.0 points behind/);
   assert.match(adr, /The dashboard path was not fully evaluated/);
   assert.match(adr, /Decision Deliberation does not execute this recommendation/);
 });

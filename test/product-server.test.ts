@@ -118,11 +118,18 @@ test("local product page completes intake, interview, dossier, ADR, and reasonin
   try {
     const page = await fetch(app.url);
     assert.equal(page.status, 200);
-    assert.match(await page.text(), /Grill me until we both know the answer/);
+    const pageText = await page.text();
+    assert.match(pageText, /Grill me until we both know the answer/);
+    assert.match(pageText, /sent to the configured model/);
+    assert.doesNotMatch(pageText, /Private local workspace|stays local/);
 
     const script = await fetch(`${app.url}/app/app.js`);
     assert.equal(script.status, 200);
-    assert.match(await script.text(), /Help me decide/);
+    const scriptText = await script.text();
+    assert.match(scriptText, /Help me decide/);
+    assert.match(scriptText, /Stopped at decision budget/);
+    assert.match(scriptText, /points behind the recommendation/);
+    assert.doesNotMatch(scriptText, /Bounded coverage|Partial evidence/);
 
     const rejected = await fetch(`${app.url}/api/product/sessions`, {
       method: "POST",
