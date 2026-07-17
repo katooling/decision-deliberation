@@ -1,0 +1,212 @@
+import { z } from "zod";
+
+export const BenchmarkArmSchema = z.enum(["one_shot", "sequential_grill", "decision_tree"]);
+const BenchmarkStatusSchema = z.enum(["complete", "partial", "failed", "missing"]);
+const UnitScore = z.number().min(0).max(1).refine(
+  (value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9,
+  "review scores must use 0.1 increments",
+);
+const NonNegative = z.number().nonnegative();
+const NonEmptyString = z.string().trim().min(1);
+
+export const PairedBenchmarkSuiteSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    suiteId: z.string().trim().min(1),
+    computeTolerance: z.number().min(0).max(1),
+    tieTolerance: z.number().min(0).max(1),
+    cases: z.array(
+      z
+        .object({
+          caseId: z.string().trim().min(1),
+          artifacts: z.array(
+            z
+              .object({
+                artifactId: z.string().trim().min(1),
+                arm: BenchmarkArmSchema,
+                status: BenchmarkStatusSchema,
+                calls: z.number().int().nonnegative(),
+                usage: z
+                  .object({
+                    inputTokens: z.number().int().nonnegative(),
+                    outputTokens: z.number().int().nonnegative(),
+                    latencyMs: NonNegative,
+                    costUsd: NonNegative.optional(),
+                  })
+                  .strict(),
+                constraintViolations: z.array(z.string().trim().min(1)),
+              })
+              .strict(),
+          ),
+          reviews: z.array(
+            z
+              .object({
+                reviewerId: z.string().trim().min(1),
+                artifactId: z.string().trim().min(1),
+                strength: NonEmptyString,
+                weakness: NonEmptyString,
+                scores: z
+                  .object({
+                    decisionQuality: UnitScore,
+                    coverage: UnitScore,
+                    traceability: UnitScore,
+                  })
+                  .strict(),
+              })
+              .strict(),
+          ),
+        })
+        .strict()
+        .superRefine((value, context) => {
+          const artifactIds = value.artifacts.map((artifact) => artifact.artifactId);
+          if (new Set(artifactIds).size !== artifactIds.length) {
+            context.addIssue({ code: "custom", path: ["artifacts"], message: "artifact IDs must be unique" });
+          }
+          const arms = value.artifacts.map((artifact) => artifact.arm);
+          if (new Set(arms).size !== arms.length) {
+            context.addIssue({ code: "custom", path: ["artifacts"], message: "each arm must have exactly one artifact" });
+          }
+          for (const arm of BenchmarkArmSchema.options) {
+            if (!arms.includes(arm)) {
+              context.addIssue({ code: "custom", path: ["artifacts"], message: `missing ${arm} artifact` });
+            }
+          }
+          for (const [index, review] of value.reviews.entries()) {
+            if (!artifactIds.includes(review.artifactId)) {
+              context.addIssue({
+                code: "custom",
+                path: ["reviews", index, "artifactId"],
+                message: "review must reference an artifact in the same case",
+              });
+            }
+          }
+          const reviewPairs = value.reviews.map((review) => `${review.reviewerId}\u0000${review.artifactId}`);
+          if (new Set(reviewPairs).size !== reviewPairs.length) {
+            context.addIssue({
+              code: "custom",
+              path: ["reviews"],
+              message: "a reviewer may score each artifact only once",
+            });
+          }
+          const reviewableArtifactIds = value.artifacts
+            .filter((artifact) => artifact.status !== "missing")
+            .map((artifact) => artifact.artifactId);
+          const reviewerIds = [...new Set(value.reviews.map((review) => review.reviewerId))];
+          for (const reviewerId of reviewerIds) {
+            for (const artifactId of reviewableArtifactIds) {
+              if (!value.reviews.some((review) =>
+                review.reviewerId === reviewerId && review.artifactId === artifactId
+              )) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["reviews"],
+                  message: `reviewer ${reviewerId} must score every non-missing artifact`,
+                });
+              }
+            }
+          }
+          for (const [index, artifact] of value.artifacts.entries()) {
+            if (artifact.status === "complete") {
+              if (artifact.calls === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "calls"],
+                  message: "a complete observation must include at least one call",
+                });
+              }
+              if (artifact.usage.inputTokens + artifact.usage.outputTokens === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "usage"],
+                  message: "a complete observation must include observed token usage",
+                });
+              }
+              if (artifact.usage.latencyMs === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "usage", "latencyMs"],
+                  message: "a complete observation must include observed latency",
+                });
+              }
+            }
+            if (artifact.status !== "missing") continue;
+            const hasUsage = artifact.calls !== 0 || artifact.usage.inputTokens !== 0 ||
+              artifact.usage.outputTokens !== 0 || artifact.usage.latencyMs !== 0 ||
+              artifact.usage.costUsd !== undefined;
+            if (hasUsage) {
+              context.addIssue({
+                code: "custom",
+                path: ["artifacts", index],
+                message: "a missing observation must have zero calls and usage",
+              });
+            }
+            if (value.reviews.some((review) => review.artifactId === artifact.artifactId)) {
+              context.addIssue({
+                code: "custom",
+                path: ["reviews"],
+                message: "a missing observation cannot have reviewer scores",
+              });
+            }
+          }
+        }),
+    ).min(1),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const caseIds = value.cases.map((item) => item.caseId);
+    if (new Set(caseIds).size !== caseIds.length) {
+      context.addIssue({ code: "custom", path: ["cases"], message: "case IDs must be unique" });
+    }
+  });
+
+export type PairedBenchmarkSuite = z.infer<typeof PairedBenchmarkSuiteSchema>;
+export type BenchmarkArm = z.infer<typeof BenchmarkArmSchema>;
+export type BenchmarkComparison = "win" | "loss" | "tie" | "reference" | "unscored";
+
+export interface MeanBenchmarkScore {
+  decisionQuality: number;
+  coverage: number;
+  traceability: number;
+  composite: number;
+  reviewCount: number;
+}
+
+export interface PairedArmResult {
+  artifactId: string;
+  arm: BenchmarkArm;
+  status: z.infer<typeof BenchmarkStatusSchema>;
+  calls: number;
+  totalTokens: number;
+  latencyMs: number;
+  costUsd: number | null;
+  constraintViolations: string[];
+  meanScore: MeanBenchmarkScore | null;
+  tokenRatioToTreatment: number | null;
+  computeMatchedToTreatment: boolean;
+  comparisonToTreatment: BenchmarkComparison;
+}
+
+export interface PairedCaseResult {
+  caseId: string;
+  arms: Record<BenchmarkArm, PairedArmResult>;
+}
+
+export interface PairedBenchmarkReport {
+  benchmarkVersion: "decision-deliberation-paired-v1";
+  suiteId: string;
+  computeTolerance: number;
+  tieTolerance: number;
+  cases: PairedCaseResult[];
+  aggregate: {
+    computeMatchedBaselines: number;
+    totalBaselines: number;
+    treatmentWins: number;
+    treatmentLosses: number;
+    ties: number;
+    unscored: number;
+  };
+  disclaimer: string;
+}
+
+export const LIVE_BENCHMARK_DISCLAIMER =
+  "These paired observations measure only the declared cases, providers, budgets, and reviewers. They do not establish universal decision superiority.";
