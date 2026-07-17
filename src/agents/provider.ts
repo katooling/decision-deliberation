@@ -1,4 +1,6 @@
 export type AgentRole =
+  | "decision-interviewer"
+  | "decision-framer"
   | "question-proposer"
   | "coverage-reviewer"
   | "question-synthesizer"

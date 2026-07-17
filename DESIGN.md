@@ -18,6 +18,20 @@ Build a local-first system that explores every admitted answer path within an ex
 
 ## Execution architecture
 
+The product-facing flow wraps the controller without weakening it:
+
+```text
+plain-language decision
+    → bounded Decision Interview
+    → validated Decision Framing
+    → deterministic Decision Deliberation
+    → recommendation-first decision page
+        ├─ portable ADR export
+        └─ read-only reasoning-tree viewer
+```
+
+The interview and framing steps use the same structured provider seam as deliberation roles. Code owns the single-current-question invariant, maximum question count, validated criteria, transition into a persisted run, and Human Approval boundary. The normal product flow exposes none of the traversal or agent-panel configuration.
+
 The default topology is a deterministic hub-and-spoke coordinator:
 
 ```text
@@ -92,6 +106,8 @@ Replay from saved events is provider-free and must reproduce the same logical gr
 
 ## Public-preview surface
 
+- local product application with decision intake, bounded clarification, framing, and a recommendation-first page
+- ADR-style portable decision export and direct reasoning-tree navigation
 - TypeScript library and CLI
 - BFS/DFS, coverage/budget policies, safety limits, and bounded concurrency
 - proposer/reviewer/synthesizer question panels

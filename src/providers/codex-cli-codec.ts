@@ -6,6 +6,8 @@ import {
   BranchEvaluationSchema,
   ConclusionResolutionSchema,
   CoverageReviewSchema,
+  DecisionInterviewTurnSchema,
+  DecisionRequestSchema,
   ExpansionResolutionSchema,
   FinalSynthesisSchema,
   QuestionProposalSchema,
@@ -15,6 +17,10 @@ type JsonSchemaObject = Record<string, unknown>;
 
 export function schemaForRequest(request: AgentRequest): z.ZodType {
   switch (request.role) {
+    case "decision-interviewer":
+      return DecisionInterviewTurnSchema;
+    case "decision-framer":
+      return DecisionRequestSchema;
     case "question-proposer":
       return QuestionProposalSchema;
     case "coverage-reviewer":

@@ -4,11 +4,34 @@
 [![Release](https://img.shields.io/github/v/release/katooling/decision-deliberation)](https://github.com/katooling/decision-deliberation/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Explore a bounded decision tree with structured agent judgment, deterministic branch creation, backwards hindsight, and a navigable evidence dossier.
+Turn an ambiguous product or engineering decision into a review-ready recommendation—with the alternatives, assumptions, and reasoning still visible.
 
 > Public preview: the core behavior is tested and replayable, but schemas and CLI flags may change before `1.0.0`. The system recommends decisions for human approval; it never executes them.
 
-![Decision tree viewer showing the selected winning branch](docs/assets/decision-tree.png)
+![Decision page showing a recommendation, ranked alternatives, assumptions, evidence, and uncertainty](docs/assets/product-decision-page.png)
+
+## The product
+
+**“Grill me until we both know the answer—and show me why.”**
+
+Enter the hard decision in plain language. Decision Deliberation asks one high-leverage question at a time, frames what actually matters, explores the alternatives within a bounded budget, and returns a decision page your team can review. The normal experience exposes no traversal settings or agent orchestration.
+
+The recommendation never executes itself. You retain the final approval.
+
+## Try the decision flow from source
+
+Requires Node.js 24 or newer. Start with the bundled deterministic provider so the complete experience appears immediately:
+
+```bash
+git clone https://github.com/katooling/decision-deliberation.git
+cd decision-deliberation
+npm ci
+npm run app -- --provider examples/demo/provider.json --runs runs
+```
+
+Open `http://127.0.0.1:4173`, enter one product or engineering decision, and answer the clarification questions. The finished page includes the recommendation, ranked alternatives, evidence, assumptions, uncertainty, a reasoning-tree link, and an ADR download.
+
+When you are ready to use a real model, replace the provider path with `examples/validation/provider-codex.json`. Real-provider deliberation can take several minutes and consume substantial model tokens.
 
 ## Why this exists
 
@@ -18,14 +41,15 @@ The controller—not an agent—owns IDs, schemas, traversal, branch creation, p
 
 ## What you get
 
-- deterministic BFS and DFS traversal;
-- coverage and budget policies with honest partial results;
-- independent proposer, reviewer, synthesizer, and evaluator calls;
-- one code-created branch for every admitted answer;
-- append-only events and provider-free replay;
-- ranked alternatives, assumptions, uncertainty, and human approval state;
-- hindsight comparison between local recommendations and final outcomes; and
-- a read-only tree and radial viewer with search, minimap, focus, breadcrumbs, deep links, and a detailed inspector.
+- one focused clarification question at a time;
+- a framed decision with explicit criteria and constraints;
+- a clear recommendation with ranked alternatives;
+- assumptions, trade-offs, evidence, and unresolved uncertainty;
+- an ADR-style Markdown export;
+- a navigable reasoning tree when you want to inspect the work; and
+- an explicit human-approval state with no automatic execution.
+
+Under the hood, deterministic code controls branching, limits, persistence, replay, and hindsight comparison. Advanced traversal and provider controls remain available through the CLI for researchers and maintainers.
 
 ## Install the public preview
 
@@ -63,6 +87,7 @@ Generated run artifacts:
 - `graph.json`: replayed decision tree;
 - `dossier.json`: machine-readable recommendation and alternatives;
 - `dossier.md`: human-readable result; and
+- `decision.md`: ADR-style product export when created through the decision flow; and
 - `calls/`: provider requests, raw outputs, validation results, and usage metadata.
 
 Run artifacts may contain sensitive decision context. Keep real runs out of public repositories.

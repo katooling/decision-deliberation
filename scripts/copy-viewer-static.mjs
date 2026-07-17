@@ -1,8 +1,11 @@
 import { cp, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const source = resolve("src/viewer/static");
-const destination = resolve("dist/src/viewer/static");
+const directories = ["viewer", "product"];
 
-await mkdir(destination, { recursive: true });
-await cp(source, destination, { recursive: true, force: true });
+for (const directory of directories) {
+  const source = resolve(`src/${directory}/static`);
+  const destination = resolve(`dist/src/${directory}/static`);
+  await mkdir(destination, { recursive: true });
+  await cp(source, destination, { recursive: true, force: true });
+}

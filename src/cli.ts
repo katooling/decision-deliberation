@@ -20,6 +20,8 @@ import { FileRunStore } from "./persistence/file-run-store.js";
 import { CommandProvider } from "./providers/command-provider.js";
 import { CodexCliProvider } from "./providers/codex-cli-provider.js";
 import { ScriptedProvider } from "./providers/scripted-provider.js";
+import { startDecisionAppServer } from "./product/server.js";
+import { DecisionProduct } from "./product/workflow.js";
 import { renderDossierMarkdown } from "./render/markdown.js";
 import { VERSION } from "./version.js";
 import { startViewerServer } from "./viewer/server.js";
@@ -291,6 +293,34 @@ async function viewCommand(flags: Flags): Promise<void> {
   });
 }
 
+async function appCommand(flags: Flags): Promise<void> {
+  const runsDirectory = typeof flags.runs === "string"
+    ? flags.runs
+    : typeof flags.out === "string"
+      ? flags.out
+      : "runs";
+  const provider = await loadProvider(requiredFlag(flags, "provider"));
+  const port = typeof flags.port === "string" ? Number(flags.port) : 4173;
+  const root = resolve(runsDirectory);
+  const app = await startDecisionAppServer({
+    runsDirectory: root,
+    product: new DecisionProduct({ provider, store: new FileRunStore(root) }),
+    port,
+  });
+  process.stdout.write(`Decision app: ${app.url}\nRuns: ${root}\n`);
+
+  await new Promise<void>((resolveStop) => {
+    let stopping = false;
+    const stop = (): void => {
+      if (stopping) return;
+      stopping = true;
+      void app.close().finally(resolveStop);
+    };
+    process.once("SIGINT", stop);
+    process.once("SIGTERM", stop);
+  });
+}
+
 function usage(): string {
   return `Decision Deliberation Public Preview
 
@@ -303,6 +333,7 @@ Commands:
   deliberate benchmark [--seed n] [--json] [--out report.md]
   deliberate benchmark-baseline <request.json> --provider <provider.json> --arm one_shot|sequential_grill [--rounds n] [--out result.json]
   deliberate benchmark-compare <observations.json> [--json] [--out report.md]
+  deliberate app --provider <provider.json> [--runs runs] [--port 4173]
   deliberate view [--runs runs] [--port 4173]
 `;
 }
@@ -324,6 +355,8 @@ async function main(): Promise<void> {
       return benchmarkBaselineCommand(positional, flags);
     case "benchmark-compare":
       return benchmarkCompareCommand(positional, flags);
+    case "app":
+      return appCommand(flags);
     case "view":
       return viewCommand(flags);
     case "version":
