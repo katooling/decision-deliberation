@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "completion": "coverage",
+  "traversal": "bfs",
+  "questionPipeline": {
+    "proposerCount": 3,
+    "reviewerCount": 1,
+    "synthesizerCount": 1
+  },
+  "options": {
+    "min": 2,
+    "target": 3,
+    "max": 3
+  },
+  "limits": {
+    "maxDepth": 3,
+    "maxNodes": 100,
+    "maxQuestions": 20,
+    "maxAgentCalls": 200
+  },
+  "concurrency": 4,
+  "maxAttemptsPerCall": 2,
+  "evaluatorCount": 3,
+  "confidencePenalty": 0
+}

@@ -1,0 +1,73 @@
+{
+  "name": "decision-deliberation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic, agent-assisted decision-tree exploration with hindsight reduction and an interactive viewer",
+  "license": "MIT",
+  "author": "Mohamad Kamar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/katooling/decision-deliberation.git"
+  },
+  "homepage": "https://github.com/katooling/decision-deliberation#readme",
+  "bugs": {
+    "url": "https://github.com/katooling/decision-deliberation/issues"
+  },
+  "keywords": [
+    "decision-making",
+    "decision-tree",
+    "agents",
+    "deliberation",
+    "hindsight",
+    "cli"
+  ],
+  "bin": {
+    "deliberate": "./dist/src/cli.js"
+  },
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/src",
+    "examples",
+    "docs",
+    "CHANGELOG.md",
+    "CONTEXT.md",
+    "DESIGN.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && tsc -p tsconfig.build.json && node scripts/copy-viewer-static.mjs",
+    "cli": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "test:coverage": "tsx --test --experimental-test-coverage test/*.test.ts",
+    "bench": "tsx src/cli.ts benchmark",
+    "view": "tsx src/cli.ts view",
+    "check:docs": "node scripts/check-links.mjs",
+    "audit:release": "node scripts/release-audit.mjs",
+    "audit:dependencies": "npm audit --omit=dev --audit-level=high",
+    "verify": "npm run typecheck && npm run test && npm run bench && npm run check:docs && npm run audit:release",
+    "release:check": "npm run verify && npm run build && npm pack --dry-run",
+    "prepack": "npm run build && npm run audit:release"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

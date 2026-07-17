@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "title": "Choose a delivery strategy",
+  "decisionStatement": "Choose the strongest complete strategy after exploring two path-dependent decision levels.",
+  "context": "A deterministic demonstration of exhaustive branch expansion and hindsight reduction.",
+  "scope": {
+    "inScope": ["Strategies A, B, and C", "Follow-up modes D, E, and F"],
+    "outOfScope": ["Automatic execution"],
+    "constraints": ["Every admitted option must be explored"]
+  },
+  "criteria": [
+    {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Expected outcome quality.",
+      "weight": 0.6,
+      "zeroAnchor": "Unacceptable outcome",
+      "oneAnchor": "Best attainable outcome"
+    },
+    {
+      "key": "resilience",
+      "label": "Resilience",
+      "description": "Ability to remain strong under adverse conditions.",
+      "weight": 0.4,
+      "zeroAnchor": "Fragile",
+      "oneAnchor": "Highly resilient"
+    }
+  ]
+}

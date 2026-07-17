@@ -1,0 +1,5 @@
+{
+  "type": "command",
+  "command": "node",
+  "args": ["examples/demo/demo-agent.mjs", "--fail-path=a"]
+}

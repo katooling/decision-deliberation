@@ -1,0 +1,16 @@
+node_modules/
+dist/
+runs/
+coverage/
+release/
+work/
+outputs/
+.env
+.env.*
+!.env.example
+.npmrc
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tgz

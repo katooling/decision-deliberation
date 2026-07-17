@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Explore a decision deliberation, its alternatives, evidence, and hindsight recommendation."
+    />
+    <title>Decision Tree Viewer</title>
+    <link rel="stylesheet" href="/viewer/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#decision-canvas">Skip to decision canvas</a>
+
+    <div id="app" class="app-shell" aria-busy="true">
+      <header class="app-header">
+        <div class="identity">
+          <div class="identity-mark" aria-hidden="true">D</div>
+          <div class="identity-copy">
+            <span class="eyebrow">Decision dossier</span>
+            <h1 id="run-title">Decision Tree Viewer</h1>
+          </div>
+        </div>
+
+        <div class="run-controls">
+          <label class="select-label" for="run-select">Run</label>
+          <select id="run-select" aria-label="Select a deliberation run">
+            <option>Loading runs…</option>
+          </select>
+          <span id="completion-badge" class="status-badge status-neutral">Loading</span>
+          <span id="approval-badge" class="status-badge status-neutral">Approval unknown</span>
+        </div>
+      </header>
+
+      <section class="decision-summary" aria-labelledby="decision-statement-label">
+        <span id="decision-statement-label" class="eyebrow">Decision</span>
+        <p id="decision-statement">Loading the selected run…</p>
+        <dl id="run-stats" class="run-stats" aria-label="Run statistics"></dl>
+      </section>
+
+      <nav class="toolbar" aria-label="Canvas and navigation controls">
+        <div class="search-control" role="search">
+          <label class="sr-only" for="search-input">Search this decision tree</label>
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input
+            id="search-input"
+            type="search"
+            autocomplete="off"
+            placeholder="Search questions, answers, evidence, IDs…"
+          />
+          <span id="search-count" aria-live="polite">0 / 0</span>
+          <button id="search-prev" class="icon-button" type="button" title="Previous result (Shift+Enter)" aria-label="Previous search result">↑</button>
+          <button id="search-next" class="icon-button" type="button" title="Next result (Enter)" aria-label="Next search result">↓</button>
+        </div>
+
+        <div class="control-group" aria-label="View">
+          <button id="view-tree" class="segmented is-active" type="button" aria-pressed="true">Tree</button>
+          <button id="view-radial" class="segmented" type="button" aria-pressed="false">Radial</button>
+        </div>
+
+        <div id="orientation-controls" class="control-group" aria-label="Tree orientation">
+          <button id="orientation-tb" class="segmented is-active" type="button" aria-pressed="true" title="Top down">Top–down</button>
+          <button id="orientation-lr" class="segmented" type="button" aria-pressed="false" title="Left to right">Left–right</button>
+        </div>
+
+        <div class="control-group" aria-label="Branch visibility">
+          <button id="focus-branch" type="button" title="Focus the selected branch (F)" aria-pressed="false">Focus</button>
+          <button id="toggle-collapse" type="button" title="Collapse or expand selected branch (C)">Collapse</button>
+          <button id="expand-all" type="button">Expand all</button>
+        </div>
+
+        <div class="control-group" aria-label="Zoom">
+          <button id="fit-all" class="icon-button" type="button" title="Fit all (1)" aria-label="Fit all branches">⌗</button>
+          <button id="fit-selection" class="icon-button" type="button" title="Fit selection (2)" aria-label="Fit selected branch">◎</button>
+          <button id="zoom-out" class="icon-button" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+          <button id="zoom-reset" type="button" title="Reset zoom (0)" aria-label="Reset zoom"><span id="zoom-value">100%</span></button>
+          <button id="zoom-in" class="icon-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+        </div>
+
+        <button id="help-button" class="icon-button" type="button" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+      </nav>
+
+      <main class="workspace">
+        <section class="canvas-panel" aria-label="Decision graph">
+          <nav id="breadcrumbs" class="breadcrumbs" aria-label="Selected decision path"></nav>
+
+          <div id="canvas-frame" class="canvas-frame">
+            <svg
+              id="decision-canvas"
+              class="decision-canvas"
+              tabindex="0"
+              role="tree"
+              aria-label="Decision branches. Use arrow keys to navigate."
+            >
+              <defs>
+                <pattern id="dot-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r="1" class="grid-dot"></circle>
+                </pattern>
+                <filter id="node-shadow" x="-20%" y="-20%" width="140%" height="160%">
+                  <feDropShadow dx="0" dy="5" stdDeviation="6" flood-opacity="0.13"></feDropShadow>
+                </filter>
+              </defs>
+              <rect class="canvas-hit-target" x="-100000" y="-100000" width="200000" height="200000" fill="url(#dot-grid)"></rect>
+              <g id="viewport">
+                <g id="relation-layer" aria-hidden="true"></g>
+                <g id="edge-layer" aria-hidden="true"></g>
+                <g id="node-layer"></g>
+              </g>
+            </svg>
+
+            <div id="canvas-empty" class="canvas-message" hidden>
+              <strong>No branches to display</strong>
+              <span>This run does not contain a renderable decision tree.</span>
+            </div>
+
+            <div id="canvas-loading" class="canvas-message">
+              <span class="spinner" aria-hidden="true"></span>
+              <strong>Loading decision tree</strong>
+            </div>
+
+            <div class="canvas-legend" aria-label="Graph legend">
+              <span><i class="legend-line legend-winning"></i> Winning path</span>
+              <span><i class="legend-line legend-local"></i> Local recommendation</span>
+              <span><i class="legend-diamond"></i> Hindsight choice</span>
+            </div>
+
+            <svg id="minimap" class="minimap" role="img" aria-label="Decision tree minimap">
+              <g id="minimap-edges"></g>
+              <g id="minimap-nodes"></g>
+              <rect id="minimap-viewport" class="minimap-viewport"></rect>
+            </svg>
+          </div>
+        </section>
+
+        <aside id="inspector" class="inspector" aria-labelledby="inspector-title">
+          <header class="inspector-header">
+            <div>
+              <span class="eyebrow">Branch inspector</span>
+              <h2 id="inspector-title">Select a branch</h2>
+            </div>
+            <button id="close-inspector" class="icon-button" type="button" aria-label="Clear branch selection">×</button>
+          </header>
+
+          <div id="inspector-empty" class="inspector-empty">
+            <div aria-hidden="true" class="empty-glyph">◇</div>
+            <p>Select any branch to inspect its question, evaluation, evidence, and provenance.</p>
+          </div>
+
+          <div id="inspector-content" class="inspector-content" hidden>
+            <section id="inspector-summary" aria-labelledby="summary-heading"></section>
+            <details open>
+              <summary id="question-heading">Question and answer</summary>
+              <section id="inspector-question"></section>
+            </details>
+            <details open>
+              <summary id="evaluation-heading">Evaluation</summary>
+              <section id="inspector-evaluation"></section>
+            </details>
+            <details open>
+              <summary id="evidence-heading">Evidence and conditions</summary>
+              <section id="inspector-evidence"></section>
+            </details>
+            <details>
+              <summary id="provenance-heading">Provenance</summary>
+              <section id="inspector-provenance"></section>
+            </details>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="fatal-error" class="fatal-error" role="alert" hidden>
+      <strong>Could not load the decision viewer</strong>
+      <p id="fatal-error-message"></p>
+      <button id="retry-button" type="button">Retry</button>
+    </div>
+
+    <dialog id="shortcuts-dialog" class="shortcuts-dialog">
+      <header>
+        <div>
+          <span class="eyebrow">Reference</span>
+          <h2>Keyboard shortcuts</h2>
+        </div>
+        <button id="close-help" class="icon-button" type="button" aria-label="Close keyboard shortcuts">×</button>
+      </header>
+      <dl class="shortcut-grid">
+        <dt><kbd>⌘/Ctrl</kbd> + <kbd>F</kbd></dt><dd>Search branches</dd>
+        <dt><kbd>↑</kbd> / <kbd>↓</kbd></dt><dd>Parent / first child</dd>
+        <dt><kbd>←</kbd> / <kbd>→</kbd></dt><dd>Previous / next sibling</dd>
+        <dt><kbd>J</kbd> / <kbd>K</kbd></dt><dd>Next / previous branch</dd>
+        <dt><kbd>C</kbd></dt><dd>Collapse or expand branch</dd>
+        <dt><kbd>F</kbd></dt><dd>Focus or unfocus branch</dd>
+        <dt><kbd>1</kbd> / <kbd>2</kbd></dt><dd>Fit all / fit selected</dd>
+        <dt><kbd>0</kbd></dt><dd>Reset zoom</dd>
+        <dt><kbd>Space</kbd> + drag</dt><dd>Pan canvas</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Clear selection or focus</dd>
+      </dl>
+    </dialog>
+
+    <div id="live-region" class="sr-only" aria-live="polite"></div>
+    <script type="module" src="/viewer/app.js"></script>
+  </body>
+</html>
