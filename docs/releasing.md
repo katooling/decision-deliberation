@@ -33,7 +33,7 @@ Install the tarball in a fresh temporary directory and verify:
 mkdir -p /tmp/decision-deliberation-install-check
 cd /tmp/decision-deliberation-install-check
 npm init -y
-npm install /path/to/release/decision-deliberation-0.1.0.tgz
+npm install /path/to/release/decision-deliberation-X.Y.Z.tgz
 ./node_modules/.bin/deliberate --version
 ./node_modules/.bin/deliberate --help
 ```

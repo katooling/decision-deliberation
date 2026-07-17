@@ -1,0 +1,5 @@
+{
+  "type": "codex-cli",
+  "timeoutMs": 300000,
+  "maxOutputBytes": 10485760
+}

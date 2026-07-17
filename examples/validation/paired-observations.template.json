@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "decision-deliberation-live-v1",
+  "computeTolerance": 0.15,
+  "tieTolerance": 0.03,
+  "cases": [
+    {
+      "caseId": "knowledge-migration",
+      "artifacts": [
+        {
+          "artifactId": "artifact_km_alpha",
+          "arm": "one_shot",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_km_beta",
+          "arm": "sequential_grill",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_km_gamma",
+          "arm": "decision_tree",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "caseId": "release-distribution",
+      "artifacts": [
+        {
+          "artifactId": "artifact_rd_alpha",
+          "arm": "one_shot",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_rd_beta",
+          "arm": "sequential_grill",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_rd_gamma",
+          "arm": "decision_tree",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "caseId": "run-storage",
+      "artifacts": [
+        {
+          "artifactId": "artifact_rs_alpha",
+          "arm": "one_shot",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_rs_beta",
+          "arm": "sequential_grill",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        },
+        {
+          "artifactId": "artifact_rs_gamma",
+          "arm": "decision_tree",
+          "status": "missing",
+          "calls": 0,
+          "usage": { "inputTokens": 0, "outputTokens": 0, "latencyMs": 0 },
+          "constraintViolations": []
+        }
+      ],
+      "reviews": []
+    }
+  ]
+}

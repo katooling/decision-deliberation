@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "title": "Migrate a collaborative knowledge base to local Markdown",
+  "decisionStatement": "Which migration strategy best preserves retrieval, provenance, and daily usability while moving from a collaborative database workspace to a local Markdown vault?",
+  "context": "A small technical team has documents, linked databases, tags, comments, and embedded files. It wants durable local files and strong search without losing the ability to understand where information came from. The migration can be staged, and the source remains read-only during validation.",
+  "scope": {
+    "inScope": [
+      "Page, database-property, link, attachment, and provenance mapping",
+      "Search, backlinks, metadata queries, and human navigation",
+      "A reversible pilot followed by an incremental migration"
+    ],
+    "outOfScope": [
+      "Recreating the source product's real-time collaboration features",
+      "Deleting or modifying the source workspace",
+      "Migrating access-control rules as if they were portable"
+    ],
+    "constraints": [
+      "The canonical destination format must remain readable without a proprietary service",
+      "Every migrated item must retain a source identifier and migration timestamp",
+      "The strategy must include validation and rollback checkpoints"
+    ]
+  },
+  "criteria": [
+    {
+      "key": "retrieval",
+      "label": "Retrieval quality",
+      "description": "How reliably users can find information through search, links, metadata, and browsing.",
+      "weight": 0.35,
+      "zeroAnchor": "Important information is routinely undiscoverable",
+      "oneAnchor": "Known-item and exploratory retrieval are consistently effective"
+    },
+    {
+      "key": "fidelity",
+      "label": "Fidelity and provenance",
+      "description": "How well content, relationships, attachments, and source identity survive migration.",
+      "weight": 0.3,
+      "zeroAnchor": "Content or origin is materially lost",
+      "oneAnchor": "Content and provenance are preserved with explicit exceptions"
+    },
+    {
+      "key": "usability",
+      "label": "Daily usability",
+      "description": "How easily the team can maintain and navigate the destination after migration.",
+      "weight": 0.2,
+      "zeroAnchor": "The destination adds prohibitive maintenance burden",
+      "oneAnchor": "Common workflows are simple and well documented"
+    },
+    {
+      "key": "reversibility",
+      "label": "Reversibility",
+      "description": "How safely the team can validate, pause, correct, or roll back the migration.",
+      "weight": 0.15,
+      "zeroAnchor": "Migration creates an irreversible cutover",
+      "oneAnchor": "Each phase has tested checkpoints and rollback"
+    }
+  ]
+}

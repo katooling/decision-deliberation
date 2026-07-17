@@ -225,6 +225,26 @@ export const BranchEvaluationSchema = z
   })
   .strict();
 
+export const BaselineDecisionSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    recommendation: NonEmptyString,
+    reasoning: StringList.min(1),
+    rankedAlternatives: z
+      .array(
+        z
+          .object({
+            label: NonEmptyString,
+            rationale: NonEmptyString,
+          })
+          .strict(),
+      )
+      .min(1),
+    assumptions: StringList,
+    uncertainties: StringList,
+  })
+  .strict();
+
 export const ApprovalSchema = z
   .object({
     decision: z.enum(["approved", "rejected"]),
@@ -244,4 +264,5 @@ export type QuestionProposal = z.infer<typeof QuestionProposalSchema>;
 export type CoverageReview = z.infer<typeof CoverageReviewSchema>;
 export type FinalSynthesis = z.infer<typeof FinalSynthesisSchema>;
 export type BranchEvaluation = z.infer<typeof BranchEvaluationSchema>;
+export type BaselineDecision = z.infer<typeof BaselineDecisionSchema>;
 export type Approval = z.infer<typeof ApprovalSchema>;
