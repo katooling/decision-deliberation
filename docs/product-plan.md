@@ -2,9 +2,9 @@
 
 ## Product definition
 
-**Target user:** a technical lead, architect, researcher, or product engineer making a complex, path-dependent decision that deserves more than a single recommendation.
+**Target user:** a product manager, engineering manager, tech lead, or staff engineer making a consequential build or architecture decision.
 
-**Job to be done:** explore the most important admitted possibilities, preserve how every conclusion was reached, compare downstream outcomes with hindsight, and hand a decision maker an inspectable recommendation.
+**Job to be done:** turn an ambiguous product or engineering decision into a review-ready recommendation without losing the alternatives, assumptions, and reasoning behind it.
 
 **Core promise:** better decision coverage and traceability within an explicit budget—not automatic truth and not automatic execution.
 
@@ -65,6 +65,7 @@
 
 ### Activation
 
+- median time from entering a decision to the first material question under two minutes;
 - median time to first complete demo under 10 minutes;
 - at least 80% of clean-environment trials reach the viewer without maintainer help; and
 - fewer than 10% of trials fail because of unclear setup instructions.
@@ -101,13 +102,22 @@ Current `0.1.1` candidate status:
 - five-person onboarding and blinded-review collection remain pending real participants; and
 - a frozen study manifest, replicate-aware analysis, and confidence intervals remain required before any inferential quality claim.
 
-### `0.2.x` — Repeatable use
+### `0.2.x` — Product decision flow
 
-- guided initializer and configuration presets
+- one-question-at-a-time decision interview
+- product-facing framing and decision page
+- ADR export and reasoning-tree handoff
 - resume/progress support
 - side-by-side run comparison
 - provider conformance suite
 - versioned export contract
+
+Current `0.2.0` candidate status:
+
+- product intake, bounded interview, validated framing, and deterministic deliberation implemented;
+- recommendation-first decision page, ADR export, and reasoning-tree handoff implemented;
+- deterministic browser flow and packaged CLI startup covered end to end; and
+- resume, live progress events, and real participant activation evidence remain pending.
 
 ### `0.3.x` — Team evaluation
 

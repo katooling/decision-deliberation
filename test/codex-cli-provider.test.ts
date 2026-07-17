@@ -42,6 +42,30 @@ const baselineDecision = {
   uncertainties: ["The final backlink conversion rate is not measured yet."],
 };
 
+const interviewTurn = {
+  schemaVersion: 1,
+  reflection: "The success condition is missing.",
+  ready: false,
+  question: "What result would make this successful?",
+  rationale: "The answer determines the comparison criteria.",
+};
+
+const framedDecision = {
+  schemaVersion: 1,
+  title: "Choose the first product surface",
+  decisionStatement: "Should the team launch the API or dashboard first?",
+  context: "The first release must validate demand.",
+  scope: { inScope: ["API", "Dashboard"], outOfScope: [], constraints: ["Six weeks"] },
+  criteria: [{
+    key: "learning",
+    label: "Validated learning",
+    description: "How quickly the release tests demand.",
+    weight: 1,
+    zeroAnchor: "No demand signal",
+    oneAnchor: "Repeated paid usage",
+  }],
+};
+
 const request: AgentRequest = {
   callId: "call_provider_conformance",
   role: "question-proposer",
@@ -67,7 +91,7 @@ for (const value of required) {
 }
 const schemaPath = args[args.indexOf("--output-schema") + 1];
 const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
-if (schema.properties?.schemaVersion?.const !== 1 || (!schema.properties?.resolution && !schema.properties?.recommendation)) {
+if (schema.properties?.schemaVersion?.const !== 1 || (!schema.properties?.resolution && !schema.properties?.recommendation && !schema.properties?.reflection && !schema.properties?.title)) {
   process.stderr.write("unexpected output schema");
   process.exit(22);
 }
@@ -77,14 +101,18 @@ if (JSON.stringify(schema).includes('"oneOf"')) {
 }
 let prompt = "";
 for await (const chunk of process.stdin) prompt += chunk;
-if (!prompt.includes("question-proposer") && !prompt.includes("baseline-designer")) {
+if (!prompt.includes("question-proposer") && !prompt.includes("baseline-designer") && !prompt.includes("decision-interviewer") && !prompt.includes("decision-framer")) {
   process.stderr.write("request context missing from prompt");
   process.exit(23);
 }
 writeFileSync(${JSON.stringify(join(directory, "observed-cwd.txt"))}, process.cwd());
 const response = schema.properties?.resolution
   ? ${JSON.stringify(JSON.stringify(codexProposal))}
-  : ${JSON.stringify(JSON.stringify(baselineDecision))};
+  : schema.properties?.reflection
+    ? ${JSON.stringify(JSON.stringify(interviewTurn))}
+    : schema.properties?.title
+      ? ${JSON.stringify(JSON.stringify(framedDecision))}
+      : ${JSON.stringify(JSON.stringify(baselineDecision))};
 const events = [
   { type: "thread.started", thread_id: "thread_fixture" },
   { type: "turn.started" },
@@ -142,6 +170,31 @@ test("Codex CLI provider supports the benchmark baseline role", async () => {
       contract: "Return BaselineDecisionSchema v1.",
     });
     assert.deepEqual(JSON.parse(response.text), baselineDecision);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("Codex CLI provider exposes structured interview and framing roles", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "decision-deliberation-codex-test-"));
+  try {
+    const codexBin = await fakeCodex(directory);
+    const provider = new CodexCliProvider({ codexBin, timeoutMs: 5_000 });
+    const interview = await provider.invoke({
+      ...request,
+      callId: "call_interview",
+      role: "decision-interviewer",
+      contract: "Return DecisionInterviewTurnSchema v1.",
+    });
+    const framing = await provider.invoke({
+      ...request,
+      callId: "call_framing",
+      role: "decision-framer",
+      contract: "Return DecisionRequestSchema v1.",
+    });
+
+    assert.deepEqual(JSON.parse(interview.text), interviewTurn);
+    assert.deepEqual(JSON.parse(framing.text), framedDecision);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

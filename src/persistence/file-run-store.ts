@@ -87,6 +87,19 @@ export class FileRunStore implements RunStore {
     await atomicJson(join(this.runDirectory(runId), "dossier.json"), dossier);
   }
 
+  async writeDecisionDocument(runId: string, markdown: string): Promise<void> {
+    await writeFile(join(this.runDirectory(runId), "decision.md"), markdown, "utf8");
+  }
+
+  async readDecisionDocument(runId: string): Promise<string | undefined> {
+    try {
+      return await readFile(join(this.runDirectory(runId), "decision.md"), "utf8");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+      throw error;
+    }
+  }
+
   readDossier(runId: string): Promise<unknown | undefined> {
     return optionalJson(join(this.runDirectory(runId), "dossier.json"));
   }

@@ -225,6 +225,9 @@ function makeProvider(options: ProviderFixtureOptions = {}) {
     }
 
     switch (request.role) {
+      case "decision-interviewer":
+      case "decision-framer":
+        throw new Error("The DecisionEngine must not invoke product interview roles.");
       case "question-proposer":
       case "question-synthesizer":
         return wrappedResolution(branch);

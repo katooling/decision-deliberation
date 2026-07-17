@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="Think through a hard product or engineering decision and leave with a review-ready recommendation." />
+    <title>Decision Deliberation</title>
+    <link rel="icon" href="/app/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/app/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Decision Deliberation home">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>Decision Deliberation</span>
+      </a>
+      <span class="privacy-note"><i aria-hidden="true"></i> Local decision workspace</span>
+    </header>
+
+    <main>
+      <section id="start-view" class="view hero-view">
+        <div class="hero-copy">
+          <p class="eyebrow">For consequential product and engineering choices</p>
+          <h1>Grill me until we both know the answer.</h1>
+          <p class="lede">Bring the messy decision. Leave with one recommendation, visible alternatives, and the reasoning your team can actually review.</p>
+          <div class="promise-row" aria-label="What you receive">
+            <span>One question at a time</span>
+            <span>Alternatives kept visible</span>
+            <span>Exportable decision record</span>
+          </div>
+        </div>
+
+        <form id="start-form" class="decision-card">
+          <label for="decision-input">What are you deciding?</label>
+          <textarea id="decision-input" name="decision" required minlength="10" maxlength="5000" rows="4" placeholder="Should we launch the API or dashboard first?"></textarea>
+          <label class="secondary-label" for="context-input">Useful context <span>optional</span></label>
+          <textarea id="context-input" name="context" maxlength="20000" rows="3" placeholder="Deadline, team, constraints, alternatives already considered…"></textarea>
+          <button id="start-button" class="primary-button" type="submit">Help me decide <span aria-hidden="true">→</span></button>
+          <p class="fine-print">Your decision and answers are sent to the configured model. Nothing executes automatically.</p>
+        </form>
+      </section>
+
+      <section id="interview-view" class="view focus-view" hidden>
+        <div class="progress-line"><span id="question-progress">Question 1</span><i></i><span>Clarify what matters</span></div>
+        <article class="question-card">
+          <p class="eyebrow">Here is what I understand</p>
+          <p id="reflection" class="reflection"></p>
+          <hr />
+          <h1 id="question-text"></h1>
+          <p id="question-rationale" class="question-rationale"></p>
+          <form id="answer-form">
+            <label class="sr-only" for="answer-input">Your answer</label>
+            <textarea id="answer-input" required maxlength="10000" rows="4" placeholder="Be concrete. What would change the decision?"></textarea>
+            <button id="answer-button" class="primary-button" type="submit">Continue <span aria-hidden="true">→</span></button>
+          </form>
+        </article>
+      </section>
+
+      <section id="ready-view" class="view focus-view" hidden>
+        <div class="ready-card">
+          <span class="ready-icon" aria-hidden="true">✓</span>
+          <p class="eyebrow">The decision is framed</p>
+          <h1 id="framing-title"></h1>
+          <p id="framing-statement" class="lede compact"></p>
+          <div>
+            <h2>What the recommendation will optimize for</h2>
+            <div id="criteria-list" class="criteria-list"></div>
+          </div>
+          <button id="deliberate-button" class="primary-button wide-button" type="button">Build my decision <span aria-hidden="true">→</span></button>
+          <p class="fine-print">The analysis is bounded. Any remaining uncertainty will stay visible.</p>
+        </div>
+      </section>
+
+      <section id="working-view" class="view focus-view" hidden aria-live="polite">
+        <div class="working-card">
+          <div class="thinking-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+          <p class="eyebrow">Building your decision</p>
+          <h1>Comparing complete paths, not just first impressions.</h1>
+          <p class="lede compact">This can take a few minutes. The result will keep the recommendation, alternatives, assumptions, and uncertainty together.</p>
+        </div>
+      </section>
+
+      <section id="result-view" class="view result-view" hidden>
+        <header class="result-header">
+          <div>
+            <p class="eyebrow">Decision dossier</p>
+            <h1 id="result-title"></h1>
+            <p id="result-statement" class="result-statement"></p>
+          </div>
+          <div class="result-actions">
+            <a id="adr-link" class="secondary-button" href="#">Export ADR</a>
+            <a id="tree-link" class="primary-button link-button" href="#">Explore reasoning</a>
+          </div>
+        </header>
+
+        <div class="result-grid">
+          <article class="recommendation-panel">
+            <div class="panel-heading">
+              <p class="eyebrow">Recommendation</p>
+              <span id="completeness-badge" class="status-pill"></span>
+            </div>
+            <h2 id="recommendation-text"></h2>
+            <p id="recommendation-summary" class="recommendation-summary"></p>
+            <div class="metric-pair">
+              <div><span>Score</span><strong id="score-value"></strong></div>
+              <div><span>Confidence</span><strong id="confidence-value"></strong></div>
+            </div>
+            <div id="conditions-block" class="detail-block"></div>
+            <div id="caveats-block" class="detail-block"></div>
+          </article>
+
+          <aside class="record-panel">
+            <p class="eyebrow">Review state</p>
+            <h2>Waiting for your approval</h2>
+            <p>The product recommends. You decide. Nothing is executed automatically.</p>
+            <dl id="run-metrics" class="run-metrics"></dl>
+          </aside>
+        </div>
+
+        <div class="dossier-sections">
+          <section>
+            <div class="section-heading"><p class="eyebrow">Ranked alternatives</p><h2>What else could work</h2></div>
+            <div id="alternatives-list" class="alternative-list"></div>
+          </section>
+          <section class="two-column-section">
+            <div><div class="section-heading"><p class="eyebrow">Assumptions</p><h2>What must stay true</h2></div><ul id="assumptions-list"></ul></div>
+            <div><div class="section-heading"><p class="eyebrow">Trade-offs</p><h2>What this choice costs</h2></div><ul id="tradeoffs-list"></ul></div>
+          </section>
+          <section class="two-column-section">
+            <div><div class="section-heading"><p class="eyebrow">Evidence</p><h2>What supports this</h2></div><div id="evidence-list"></div></div>
+            <div><div class="section-heading"><p class="eyebrow">Uncertainty</p><h2>What remains open</h2></div><ul id="uncertainty-list"></ul></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="error-toast" class="error-toast" role="alert" hidden>
+      <strong>Something interrupted the decision.</strong>
+      <p id="error-message"></p>
+      <button id="dismiss-error" type="button">Dismiss</button>
+    </div>
+
+    <script type="module" src="/app/app.js"></script>
+  </body>
+</html>

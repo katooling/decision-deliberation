@@ -6,6 +6,11 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ### Added
 
+- local product experience for decision intake, one-question-at-a-time clarification, framing, deliberation, and a review-ready result page;
+- product workflow roles for high-leverage interviewing and validated Decision Request framing;
+- ADR-style Markdown export and direct navigation from the decision page into the reasoning-tree viewer;
+- same-origin, bounded JSON write routes that are enabled only by the explicit product application command;
+- `deliberate app` as the default product-facing local workflow;
 - isolated Codex CLI provider with role-specific structured output and token accounting;
 - Codex-compatible expand/conclude schemas without changing the strict domain union;
 - one-shot and sequential-grill baseline runner;

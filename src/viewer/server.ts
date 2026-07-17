@@ -6,10 +6,12 @@ import { fileURLToPath } from "node:url";
 import type { DecisionDossier } from "../core/dossier.js";
 import type { DecisionState } from "../domain/state.js";
 import { assertSafeStoreId } from "../persistence/run-store.js";
+import { ProductWorkflowError, type DecisionProduct } from "../product/workflow.js";
 import { deriveViewerBundle } from "./bundle.js";
 import type { DecisionViewerBundle } from "./types.js";
 
 const DEFAULT_STATIC_DIRECTORY = fileURLToPath(new URL("./static", import.meta.url));
+const DEFAULT_PRODUCT_STATIC_DIRECTORY = fileURLToPath(new URL("../product/static", import.meta.url));
 const SECURITY_HEADERS = {
   "cache-control": "no-store",
   "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
@@ -25,6 +27,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".map": "application/json; charset=utf-8",
+  ".md": "text/markdown; charset=utf-8",
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
@@ -49,6 +52,8 @@ export interface StartViewerServerOptions {
   host?: string;
   port?: number;
   staticDirectory?: string;
+  product?: DecisionProduct;
+  productStaticDirectory?: string;
 }
 
 export interface ViewerServerHandle {
@@ -196,9 +201,17 @@ async function serveStatic(
   response: ServerResponse,
   staticRoot: string,
   pathname: string,
+  productStaticRoot?: string,
 ): Promise<void> {
   let name: string;
-  if (pathname === "/" || pathname === "/viewer" || pathname === "/viewer/") {
+  let selectedRoot = staticRoot;
+  if (productStaticRoot !== undefined && pathname === "/") {
+    selectedRoot = productStaticRoot;
+    name = "index.html";
+  } else if (productStaticRoot !== undefined && pathname.startsWith("/app/")) {
+    selectedRoot = productStaticRoot;
+    name = pathname.slice("/app/".length);
+  } else if (pathname === "/" || pathname === "/viewer" || pathname === "/viewer/") {
     name = "index.html";
   } else if (pathname.startsWith("/viewer/")) {
     name = pathname.slice("/viewer/".length);
@@ -206,12 +219,12 @@ async function serveStatic(
     throw new HttpError(404, "Not found");
   }
   if (!name || name.includes("\0")) throw new HttpError(400, "Invalid static path");
-  const candidate = resolve(staticRoot, name);
-  if (!isWithin(staticRoot, candidate)) throw new HttpError(400, "Invalid static path");
+  const candidate = resolve(selectedRoot, name);
+  if (!isWithin(selectedRoot, candidate)) throw new HttpError(400, "Invalid static path");
   let canonical: string;
   try {
     canonical = await realpath(candidate);
-    if (!isWithin(staticRoot, canonical) || !(await stat(canonical)).isFile()) {
+    if (!isWithin(selectedRoot, canonical) || !(await stat(canonical)).isFile()) {
       throw new HttpError(404, "Static file not found");
     }
   } catch (error) {
@@ -220,6 +233,75 @@ async function serveStatic(
   }
   const contentType = CONTENT_TYPES[extname(canonical).toLowerCase()] ?? "application/octet-stream";
   send(request, response, 200, contentType, await readFile(canonical));
+}
+
+async function readJsonBody(request: IncomingMessage): Promise<unknown> {
+  if (!(request.headers["content-type"] ?? "").toLowerCase().startsWith("application/json")) {
+    throw new HttpError(415, "Content-Type must be application/json");
+  }
+  const chunks: Buffer[] = [];
+  let bytes = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bytes += buffer.length;
+    if (bytes > 64 * 1024) throw new HttpError(413, "JSON request body is too large");
+    chunks.push(buffer);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as unknown;
+  } catch {
+    throw new HttpError(400, "Request body must contain valid JSON");
+  }
+}
+
+function assertSameOriginWrite(request: IncomingMessage): void {
+  if (request.headers["sec-fetch-site"] === "cross-site") {
+    throw new HttpError(403, "Cross-site writes are not allowed");
+  }
+  const origin = request.headers.origin;
+  const host = request.headers.host;
+  if (typeof origin !== "string" || typeof host !== "string") {
+    throw new HttpError(403, "Product writes require a same-origin browser request");
+  }
+  try {
+    const parsed = new URL(origin);
+    const requestedHost = new URL(`http://${host}`).hostname;
+    if (
+      parsed.protocol !== "http:" ||
+      parsed.host !== host ||
+      !["127.0.0.1", "localhost", "[::1]"].includes(requestedHost)
+    ) {
+      throw new HttpError(403, "Cross-site writes are not allowed");
+    }
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(403, "Cross-site writes are not allowed");
+  }
+}
+
+async function handleProductWrite(
+  request: IncomingMessage,
+  response: ServerResponse,
+  pathname: string,
+  product: DecisionProduct,
+): Promise<void> {
+  assertSameOriginWrite(request);
+  if (pathname === "/api/product/sessions") {
+    sendJson(request, response, 201, await product.begin(await readJsonBody(request)));
+    return;
+  }
+  const answer = pathname.match(/^\/api\/product\/sessions\/([^/]+)\/answer$/);
+  if (answer?.[1] !== undefined) {
+    sendJson(request, response, 200, await product.answer(answer[1], await readJsonBody(request)));
+    return;
+  }
+  const deliberate = pathname.match(/^\/api\/product\/sessions\/([^/]+)\/deliberate$/);
+  if (deliberate?.[1] !== undefined) {
+    await readJsonBody(request);
+    sendJson(request, response, 201, await product.deliberate(deliberate[1]));
+    return;
+  }
+  throw new HttpError(404, "Product route not found");
 }
 
 export async function startViewerServer(
@@ -232,15 +314,32 @@ export async function startViewerServer(
   if (!(await stat(runsRoot)).isDirectory()) throw new Error("runsDirectory must be a directory");
   const staticRoot = await realpath(resolve(options.staticDirectory ?? DEFAULT_STATIC_DIRECTORY));
   if (!(await stat(staticRoot)).isDirectory()) throw new Error("staticDirectory must be a directory");
+  const productStaticRoot = options.product === undefined
+    ? undefined
+    : await realpath(resolve(options.productStaticDirectory ?? DEFAULT_PRODUCT_STATIC_DIRECTORY));
+  if (productStaticRoot !== undefined && !(await stat(productStaticRoot)).isDirectory()) {
+    throw new Error("productStaticDirectory must be a directory");
+  }
 
   const server = createServer((request, response) => {
     void (async () => {
+      const pathname = decodeRequestPath(request);
+      if (request.method === "POST" && options.product !== undefined && pathname.startsWith("/api/product/")) {
+        await handleProductWrite(request, response, pathname, options.product);
+        return;
+      }
       if (request.method !== "GET" && request.method !== "HEAD") {
         response.setHeader("allow", "GET, HEAD");
         sendJson(request, response, 405, { error: "Method not allowed" });
         return;
       }
-      const pathname = decodeRequestPath(request);
+      if (options.product !== undefined && pathname.startsWith("/api/product/runs/") && pathname.endsWith("/adr")) {
+        const runId = pathname.slice("/api/product/runs/".length, -"/adr".length);
+        const adr = await options.product.exportAdr(runId);
+        response.setHeader("content-disposition", `attachment; filename="${runId}.md"`);
+        send(request, response, 200, "text/markdown; charset=utf-8", adr);
+        return;
+      }
       if (pathname === "/api/runs") {
         sendJson(request, response, 200, await listRuns(runsRoot));
         return;
@@ -250,10 +349,14 @@ export async function startViewerServer(
         sendJson(request, response, 200, await loadBundle(runsRoot, runId));
         return;
       }
-      await serveStatic(request, response, staticRoot, pathname);
+      await serveStatic(request, response, staticRoot, pathname, productStaticRoot);
     })().catch((error: unknown) => {
-      const status = error instanceof HttpError ? error.status : 500;
-      const message = error instanceof HttpError ? error.message : "Internal viewer error";
+      const status = error instanceof HttpError || error instanceof ProductWorkflowError
+        ? error.status
+        : 500;
+      const message = error instanceof HttpError || error instanceof ProductWorkflowError
+        ? error.message
+        : "Internal decision application error";
       if (!response.headersSent) sendJson(request, response, status, { error: message });
       else response.destroy();
     });

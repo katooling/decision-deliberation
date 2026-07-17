@@ -1,6 +1,6 @@
 {
   "name": "decision-deliberation",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Deterministic, agent-assisted decision-tree exploration with hindsight reduction and an interactive viewer",
@@ -51,6 +51,7 @@
     "test": "tsx --test test/*.test.ts",
     "test:coverage": "tsx --test --experimental-test-coverage test/*.test.ts",
     "bench": "tsx src/cli.ts benchmark",
+    "app": "tsx src/cli.ts app",
     "view": "tsx src/cli.ts view",
     "check:docs": "node scripts/check-links.mjs",
     "audit:release": "node scripts/release-audit.mjs",

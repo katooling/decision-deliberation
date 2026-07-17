@@ -8,6 +8,14 @@ This context describes a system that explores a decision space through structure
 A bounded investigation that explores the possibilities relevant to one decision and ends with a recommendation for human approval.
 _Avoid_: Automatic decision, grilling session
 
+**Decision Interview**:
+A bounded, one-question-at-a-time clarification of the decision's desired outcome, constraints, alternatives, criteria, and evidence needs. A question is eligible only when its answer could materially change the later recommendation.
+_Avoid_: Intake form, unbounded chat
+
+**Decision Framing**:
+The validated Decision Request produced from the original statement, supplied context, and Decision Interview answers before branch exploration begins.
+_Avoid_: Prompt expansion, hidden system interpretation
+
 **Decision Dossier**:
 The traversable result of a **Decision Deliberation**, containing its recommendation, ranked alternatives, reasoning, evidence, assumptions, uncertainty, explored branches, confidence, and approval point.
 _Avoid_: Final answer, report

@@ -42,6 +42,32 @@ export const DecisionRequestSchema = z
     }
   });
 
+export const DecisionInterviewTurnSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    reflection: NonEmptyString,
+    ready: z.boolean(),
+    question: NonEmptyString.nullable(),
+    rationale: NonEmptyString.nullable(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.ready && (value.question !== null || value.rationale !== null)) {
+      context.addIssue({
+        code: "custom",
+        path: ["question"],
+        message: "ready interview turns must not contain another question",
+      });
+    }
+    if (!value.ready && (value.question === null || value.rationale === null)) {
+      context.addIssue({
+        code: "custom",
+        path: ["question"],
+        message: "open interview turns require one question and rationale",
+      });
+    }
+  });
+
 export const BootstrapConfigurationSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -256,6 +282,7 @@ export const ApprovalSchema = z
 
 export type DecisionCriterion = z.infer<typeof DecisionCriterionSchema>;
 export type DecisionRequest = z.infer<typeof DecisionRequestSchema>;
+export type DecisionInterviewTurn = z.infer<typeof DecisionInterviewTurnSchema>;
 export type BootstrapConfiguration = z.infer<typeof BootstrapConfigurationSchema>;
 export type CandidateOption = z.infer<typeof CandidateOptionSchema>;
 export type BranchConclusion = z.infer<typeof BranchConclusionSchema>;

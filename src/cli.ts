@@ -20,9 +20,11 @@ import { FileRunStore } from "./persistence/file-run-store.js";
 import { CommandProvider } from "./providers/command-provider.js";
 import { CodexCliProvider } from "./providers/codex-cli-provider.js";
 import { ScriptedProvider } from "./providers/scripted-provider.js";
+import { startDecisionAppServer } from "./product/server.js";
+import { DecisionProduct } from "./product/workflow.js";
 import { renderDossierMarkdown } from "./render/markdown.js";
 import { VERSION } from "./version.js";
-import { startViewerServer } from "./viewer/server.js";
+import { startViewerServer, type ViewerServerHandle } from "./viewer/server.js";
 
 type Flags = Record<string, string | boolean>;
 
@@ -266,29 +268,55 @@ async function benchmarkBaselineCommand(positional: string[], flags: Flags): Pro
   process.stdout.write(output);
 }
 
-async function viewCommand(flags: Flags): Promise<void> {
-  const runsDirectory = typeof flags.runs === "string"
-    ? flags.runs
-    : typeof flags.out === "string"
-      ? flags.out
-      : "runs";
-  const port = typeof flags.port === "string" ? Number(flags.port) : 4173;
-  const viewer = await startViewerServer({
-    runsDirectory: resolve(runsDirectory),
-    port,
-  });
-  process.stdout.write(`Decision viewer: ${viewer.url}\nRuns: ${resolve(runsDirectory)}\n`);
+function localServerSettings(flags: Flags): { runsDirectory: string; port: number } {
+  return {
+    runsDirectory: resolve(
+      typeof flags.runs === "string"
+        ? flags.runs
+        : typeof flags.out === "string"
+          ? flags.out
+          : "runs",
+    ),
+    port: typeof flags.port === "string" ? Number(flags.port) : 4173,
+  };
+}
 
-  await new Promise<void>((resolveStop) => {
+async function keepLocalServerOpen(
+  handle: ViewerServerHandle,
+  label: "Decision viewer" | "Decision app",
+  runsDirectory: string,
+): Promise<void> {
+  process.stdout.write(`${label}: ${handle.url}\nRuns: ${runsDirectory}\n`);
+  await new Promise<void>((resolveStop, rejectStop) => {
     let stopping = false;
     const stop = (): void => {
       if (stopping) return;
       stopping = true;
-      void viewer.close().finally(resolveStop);
+      void handle.close().then(resolveStop, rejectStop);
     };
     process.once("SIGINT", stop);
     process.once("SIGTERM", stop);
   });
+}
+
+async function viewCommand(flags: Flags): Promise<void> {
+  const { runsDirectory, port } = localServerSettings(flags);
+  const viewer = await startViewerServer({
+    runsDirectory,
+    port,
+  });
+  await keepLocalServerOpen(viewer, "Decision viewer", runsDirectory);
+}
+
+async function appCommand(flags: Flags): Promise<void> {
+  const { runsDirectory, port } = localServerSettings(flags);
+  const provider = await loadProvider(requiredFlag(flags, "provider"));
+  const app = await startDecisionAppServer({
+    runsDirectory,
+    product: new DecisionProduct({ provider, store: new FileRunStore(runsDirectory) }),
+    port,
+  });
+  await keepLocalServerOpen(app, "Decision app", runsDirectory);
 }
 
 function usage(): string {
@@ -303,6 +331,7 @@ Commands:
   deliberate benchmark [--seed n] [--json] [--out report.md]
   deliberate benchmark-baseline <request.json> --provider <provider.json> --arm one_shot|sequential_grill [--rounds n] [--out result.json]
   deliberate benchmark-compare <observations.json> [--json] [--out report.md]
+  deliberate app --provider <provider.json> [--runs runs] [--port 4173]
   deliberate view [--runs runs] [--port 4173]
 `;
 }
@@ -324,6 +353,8 @@ async function main(): Promise<void> {
       return benchmarkBaselineCommand(positional, flags);
     case "benchmark-compare":
       return benchmarkCompareCommand(positional, flags);
+    case "app":
+      return appCommand(flags);
     case "view":
       return viewCommand(flags);
     case "version":
