@@ -22,6 +22,7 @@ The Codex provider reuses existing CLI authentication and does not store a key i
 
 ## Evidence collection
 
-- `paired-observations.template.json` holds arm usage, status, constraint violations, and blinded reviewer scores.
+- `paired-observations.template.json` holds arm usage, status, constraint violations, and blinded reviewer evidence. Every review record must include `reviewerId`, `artifactId`, numeric `scores`, one concrete `strength`, and one concrete `weakness`; each participating reviewer must score every non-missing artifact in the case.
 - `user-study-results.template.csv` records onboarding behavior for five real participants.
 - Generated decisions, call artifacts, model transcripts, and participant notes belong in ignored private working directories, not this public example tree.
+- `benchmark-baseline --out` writes successful or failed attempt artifacts into its JSON result; treat that file as a private transcript-bearing evidence bundle.

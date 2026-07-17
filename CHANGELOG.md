@@ -18,7 +18,11 @@ All notable changes are documented here. This project follows Semantic Versionin
 ### Fixed
 
 - preserve the decisive tails of both stdout and stderr when `codex exec` fails;
-- represent unavailable provider cost as unknown in the baseline runner instead of zero.
+- represent unavailable provider cost as unknown in the baseline runner instead of zero;
+- reject unobserved complete benchmark rows and mismatched reviewer populations;
+- retain successful and failed baseline call artifacts in CLI evidence bundles;
+- validate external Codex usage counters before aggregation; and
+- expose per-case comparison outcomes and qualitative reviewer evidence.
 
 ## [0.1.0] - 2026-07-17
 

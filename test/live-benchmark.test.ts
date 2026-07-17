@@ -46,16 +46,22 @@ const suite = {
         {
           reviewerId: "reviewer_1",
           artifactId: "artifact_red",
-          scores: { decisionQuality: 0.6, coverage: 0.55, traceability: 0.4 },
+          strength: "The recommendation is direct.",
+          weakness: "Coverage is narrow.",
+          scores: { decisionQuality: 0.6, coverage: 0.6, traceability: 0.4 },
         },
         {
           reviewerId: "reviewer_1",
           artifactId: "artifact_blue",
+          strength: "The alternatives are explicit.",
+          weakness: "The constraint is violated.",
           scores: { decisionQuality: 0.8, coverage: 0.8, traceability: 0.8 },
         },
         {
           reviewerId: "reviewer_1",
           artifactId: "artifact_green",
+          strength: "The decision chain is inspectable.",
+          weakness: "The analysis is expensive.",
           scores: { decisionQuality: 0.8, coverage: 0.8, traceability: 0.8 },
         },
       ],
@@ -73,7 +79,7 @@ test("paired benchmark separates blinded quality from compute matching", () => {
   assert.equal(result.arms.sequential_grill.computeMatchedToTreatment, false);
   assert.equal(result.arms.sequential_grill.tokenRatioToTreatment, 1.2);
   assert.equal(result.arms.decision_tree.computeMatchedToTreatment, true);
-  assert.equal(result.arms.one_shot.meanScore?.composite, 0.516667);
+  assert.equal(result.arms.one_shot.meanScore?.composite, 0.533333);
   assert.equal(result.arms.sequential_grill.comparisonToTreatment, "unscored");
   assert.equal(result.arms.one_shot.comparisonToTreatment, "loss");
   assert.equal(report.aggregate.computeMatchedBaselines, 1);
@@ -87,6 +93,8 @@ test("paired benchmark separates blinded quality from compute matching", () => {
 test("paired benchmark markdown exposes unmatched compute and constraints", () => {
   const markdown = renderPairedBenchmarkMarkdown(runPairedBenchmark(suite));
   assert.match(markdown, /UNMATCHED/);
+  assert.match(markdown, /\| Comparison \|/);
+  assert.match(markdown, /\| loss \|/);
   assert.match(markdown, /Cost/);
   assert.match(markdown, /\$0\.0200/);
   assert.match(markdown, /Constraint violations/);
@@ -131,4 +139,24 @@ test("paired benchmark rejects duplicate cases and duplicate reviewer joins", ()
   const duplicateReview = structuredClone(suite);
   duplicateReview.cases[0]!.reviews.push(structuredClone(duplicateReview.cases[0]!.reviews[0]!));
   assert.throws(() => runPairedBenchmark(duplicateReview), /reviewer may score each artifact only once/);
+});
+
+test("paired benchmark rejects unobserved complete artifacts and incomplete reviewer sets", () => {
+  const unobserved = structuredClone(suite);
+  unobserved.cases[0]!.artifacts[0]!.calls = 0;
+  unobserved.cases[0]!.artifacts[0]!.usage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    latencyMs: 0,
+    costUsd: 0,
+  };
+  assert.throws(() => runPairedBenchmark(unobserved), /complete observation must include/);
+
+  const incompleteReview = structuredClone(suite);
+  incompleteReview.cases[0]!.reviews.pop();
+  assert.throws(() => runPairedBenchmark(incompleteReview), /must score every non-missing artifact/);
+
+  const invalidIncrement = structuredClone(suite);
+  invalidIncrement.cases[0]!.reviews[0]!.scores.coverage = 0.55;
+  assert.throws(() => runPairedBenchmark(invalidIncrement), /0\.1 increments/);
 });

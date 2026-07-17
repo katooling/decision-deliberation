@@ -28,7 +28,9 @@ Score each dimension from `0.0` to `1.0` in increments of `0.1`.
 2. Review artifacts in a randomized order.
 3. Score every artifact before discussing any with another reviewer.
 4. Record one concrete strength and one concrete weakness separately from the numeric scores.
-5. Submit scores keyed only by `artifactId`.
+5. Submit scores, one concrete `strength`, and one concrete `weakness` keyed by `reviewerId` and `artifactId` through the validated paired-observation schema.
 6. Reveal the arm mapping only after every score is frozen.
 
 Do not change a score after arm disclosure. Corrections for data-entry mistakes must retain the original value and an explanation.
+
+The public schema stores the frozen review record but does not model corrections. If a correction is necessary, retain the original observation suite and write a new immutable suite with the correction explanation in the study's private evidence directory.

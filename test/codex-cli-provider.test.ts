@@ -279,3 +279,28 @@ process.exit(1);
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("Codex CLI provider rejects malformed external usage counters", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "decision-deliberation-codex-test-"));
+  try {
+    const codexBin = join(directory, "malformed-usage-codex.mjs");
+    await writeFile(
+      codexBin,
+      `#!/usr/bin/env node
+process.stdin.resume();
+process.stdin.on("end", () => {
+  const text = ${JSON.stringify(JSON.stringify(codexProposal))};
+  process.stdout.write(JSON.stringify({ type: "item.completed", item: { type: "agent_message", text } }) + "\\n");
+  process.stdout.write(JSON.stringify({ type: "turn.completed", usage: { input_tokens: -1, output_tokens: "45" } }) + "\\n");
+});
+`,
+      "utf8",
+    );
+    await chmod(codexBin, 0o755);
+    const provider = new CodexCliProvider({ codexBin, timeoutMs: 5_000 });
+
+    await assert.rejects(provider.invoke(request), /usage\.input_tokens must be a nonnegative integer/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

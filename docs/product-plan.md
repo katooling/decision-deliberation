@@ -98,7 +98,8 @@ Current `0.1.1` candidate status:
 - three sanitized cases and bounded configurations implemented;
 - first one-shot, sequential-grill, and depth-bounded tree observations recorded for one case;
 - compute matching and blinded-score joins implemented; and
-- five-person onboarding and blinded-review collection remain pending real participants.
+- five-person onboarding and blinded-review collection remain pending real participants; and
+- a frozen study manifest, replicate-aware analysis, and confidence intervals remain required before any inferential quality claim.
 
 ### `0.2.x` — Repeatable use
 

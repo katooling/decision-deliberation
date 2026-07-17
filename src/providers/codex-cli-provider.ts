@@ -35,6 +35,30 @@ interface ParsedCodexEvents {
   usage?: CodexUsage;
 }
 
+const CODEX_USAGE_FIELDS = [
+  "input_tokens",
+  "cached_input_tokens",
+  "output_tokens",
+  "reasoning_output_tokens",
+] as const;
+
+function parseCodexUsage(value: unknown): CodexUsage {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("codex turn.completed usage must be an object");
+  }
+  const record = value as Record<string, unknown>;
+  const usage: CodexUsage = {};
+  for (const field of CODEX_USAGE_FIELDS) {
+    const count = record[field];
+    if (count === undefined) continue;
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+      throw new Error(`codex turn.completed usage.${field} must be a nonnegative integer`);
+    }
+    usage[field] = count;
+  }
+  return usage;
+}
+
 const ENVIRONMENT_ALLOWLIST = [
   "PATH", "Path", "HOME", "USER", "LOGNAME", "SHELL",
   "TMPDIR", "TMP", "TEMP", "LANG", "LC_ALL", "LC_CTYPE",
@@ -106,8 +130,8 @@ function parseEventStream(stdout: string): ParsedCodexEvents {
       const item = record.item as Record<string, unknown>;
       if (item.type === "agent_message" && typeof item.text === "string") message = item.text;
     }
-    if (record.type === "turn.completed" && typeof record.usage === "object" && record.usage !== null) {
-      usage = record.usage as CodexUsage;
+    if (record.type === "turn.completed" && record.usage !== undefined) {
+      usage = parseCodexUsage(record.usage);
     }
     if (record.type === "turn.failed" || record.type === "error") {
       const detail = typeof record.message === "string" ? `: ${record.message}` : "";

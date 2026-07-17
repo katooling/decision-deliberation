@@ -30,7 +30,7 @@ The command fails if orchestration loses an admitted path, recommends a non-desc
 
 ## Live paired protocol
 
-For real-model evidence:
+For real-model evidence that supports an inferential quality claim:
 
 1. freeze and hash cases, prompts, schemas, configurations, model identifiers, reducer, and scorer;
 2. give every arm identical public facts, criteria, tool policy, and dossier output contract;
@@ -42,6 +42,8 @@ For real-model evidence:
 8. report confidence intervals, per-case results, quality/cost, and hard-constraint regressions.
 
 A quality gain against B0 but not compute-matched B1 supports “more inference helped,” not an architecture advantage.
+
+The current `decision-deliberation-paired-v1` analyzer is deliberately narrower than this full protocol. It validates one observed artifact per arm and case, enforces paired blinded reviewer sets, reports descriptive per-case quality and cost, and preserves incomplete evidence. It does not yet accept replicate sets, a frozen-study manifest, or calculate confidence intervals. Until those capabilities exist, its output is pilot evidence only and must not support an architecture-superiority claim.
 
 ### Paired live benchmark
 
@@ -61,6 +63,8 @@ deliberate benchmark-baseline case/request.json \
   --out work/sequential.json
 ```
 
+Baseline JSON includes every structured call artifact, including invalid retry attempts and raw provider responses. Failed baseline commands still write the failure bundle when `--out` is supplied before exiting nonzero. Keep these files in an ignored private evidence directory because provider transcripts may contain supplied decision context.
+
 Normalize baseline decisions and Decision Dossiers through the exported `normalizeBaselineArtifact` and `normalizeDossierArtifact` functions before review. Both produce the same artifact keys and omit run IDs, branch IDs, arm labels, scores, calls, tokens, and latency.
 
 Reviewers score only randomized `artifactId` files using the [blinded rubric](reviewer-rubric.md). After scores are frozen, join them to the hidden arm mapping in an observation suite and run:
@@ -70,6 +74,8 @@ deliberate benchmark-compare observations.json --out report.md
 ```
 
 The analyzer reports reviewer quality separately from compute. It classifies every observed baseline as matched or unmatched using the suite's declared token tolerance and preserves partial runs, failed runs, explicitly missing observations, missing reviews, constraints, losses, and ties. Missing observations use `status: "missing"` with zero calls and usage; incomplete, failed, missing, or constraint-violating comparisons remain unscored.
+
+Every `complete` observation must contain at least one call plus observed token use and latency. Every participating reviewer must score every non-missing artifact in a case and persist one concrete strength and weakness. This prevents absent inference and mismatched reviewer populations from becoming wins or losses.
 
 Use [`paired-observations.template.json`](../examples/validation/paired-observations.template.json) as the data contract. Zero calls and empty reviews mean evidence is pending; they are not placeholder wins.
 

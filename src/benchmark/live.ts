@@ -2,8 +2,12 @@ import { z } from "zod";
 
 const BenchmarkArmSchema = z.enum(["one_shot", "sequential_grill", "decision_tree"]);
 const BenchmarkStatusSchema = z.enum(["complete", "partial", "failed", "missing"]);
-const UnitScore = z.number().min(0).max(1);
+const UnitScore = z.number().min(0).max(1).refine(
+  (value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9,
+  "review scores must use 0.1 increments",
+);
 const NonNegative = z.number().nonnegative();
+const NonEmptyString = z.string().trim().min(1);
 
 export const PairedBenchmarkSuiteSchema = z
   .object({
@@ -39,6 +43,8 @@ export const PairedBenchmarkSuiteSchema = z
               .object({
                 reviewerId: z.string().trim().min(1),
                 artifactId: z.string().trim().min(1),
+                strength: NonEmptyString,
+                weakness: NonEmptyString,
                 scores: z
                   .object({
                     decisionQuality: UnitScore,
@@ -82,7 +88,47 @@ export const PairedBenchmarkSuiteSchema = z
               message: "a reviewer may score each artifact only once",
             });
           }
+          const reviewableArtifactIds = value.artifacts
+            .filter((artifact) => artifact.status !== "missing")
+            .map((artifact) => artifact.artifactId);
+          const reviewerIds = [...new Set(value.reviews.map((review) => review.reviewerId))];
+          for (const reviewerId of reviewerIds) {
+            for (const artifactId of reviewableArtifactIds) {
+              if (!value.reviews.some((review) =>
+                review.reviewerId === reviewerId && review.artifactId === artifactId
+              )) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["reviews"],
+                  message: `reviewer ${reviewerId} must score every non-missing artifact`,
+                });
+              }
+            }
+          }
           for (const [index, artifact] of value.artifacts.entries()) {
+            if (artifact.status === "complete") {
+              if (artifact.calls === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "calls"],
+                  message: "a complete observation must include at least one call",
+                });
+              }
+              if (artifact.usage.inputTokens + artifact.usage.outputTokens === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "usage"],
+                  message: "a complete observation must include observed token usage",
+                });
+              }
+              if (artifact.usage.latencyMs === 0) {
+                context.addIssue({
+                  code: "custom",
+                  path: ["artifacts", index, "usage", "latencyMs"],
+                  message: "a complete observation must include observed latency",
+                });
+              }
+            }
             if (artifact.status !== "missing") continue;
             const hasUsage = artifact.calls !== 0 || artifact.usage.inputTokens !== 0 ||
               artifact.usage.outputTokens !== 0 || artifact.usage.latencyMs !== 0 ||
@@ -296,14 +342,14 @@ export function renderPairedBenchmarkMarkdown(report: PairedBenchmarkReport): st
     "",
     "Reviewer scores are joined to blinded artifact IDs after review. Compute matching is reported independently from quality.",
     "",
-    "| Case | Arm | Status | Composite | Tokens | Ratio | Compute | Calls | Latency | Cost |",
-    "|---|---|---|---:|---:|---:|---|---:|---:|---:|",
+    "| Case | Arm | Status | Comparison | Composite | Tokens | Ratio | Compute | Calls | Latency | Cost |",
+    "|---|---|---|---|---:|---:|---:|---|---:|---:|---:|",
     ...report.cases.flatMap((item) => BenchmarkArmSchema.options.map((arm) => {
       const result = item.arms[arm];
       const ratio = result.tokenRatioToTreatment === null
         ? "—"
         : result.tokenRatioToTreatment.toFixed(3);
-      return `| ${item.caseId} | ${arm} | ${result.status} | ${score(result.meanScore?.composite)} | ${result.totalTokens} | ${ratio} | ${result.computeMatchedToTreatment ? "MATCHED" : "UNMATCHED"} | ${result.calls} | ${Math.round(result.latencyMs)} ms | ${cost(result.costUsd)} |`;
+      return `| ${item.caseId} | ${arm} | ${result.status} | ${result.comparisonToTreatment} | ${score(result.meanScore?.composite)} | ${result.totalTokens} | ${ratio} | ${result.computeMatchedToTreatment ? "MATCHED" : "UNMATCHED"} | ${result.calls} | ${Math.round(result.latencyMs)} ms | ${cost(result.costUsd)} |`;
     })),
     "",
     "## Aggregate",

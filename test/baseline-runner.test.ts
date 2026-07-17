@@ -82,3 +82,25 @@ test("one-shot baseline cannot silently use multiple rounds", async () => {
     /one_shot requires exactly one round/,
   );
 });
+
+test("baseline retries keep one logical call ID and distinct attempt artifacts", async () => {
+  const provider = new ScriptedProvider([
+    "not valid JSON",
+    decision(1),
+  ]);
+  const result = await runBaselineSeries({
+    provider,
+    request,
+    arm: "one_shot",
+    rounds: 1,
+    maxAttemptsPerCall: 2,
+    callIdPrefix: "benchmark.fixture.one_shot",
+  });
+
+  assert.equal(result.artifacts.length, 2);
+  assert.deepEqual(
+    result.artifacts.map((artifact) => artifact.callId),
+    ["benchmark.fixture.one_shot.round-1", "benchmark.fixture.one_shot.round-1"],
+  );
+  assert.equal(new Set(result.artifacts.map((artifact) => artifact.artifactId)).size, 2);
+});

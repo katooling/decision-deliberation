@@ -12,6 +12,15 @@ Environment:
 - one-shot and sequential baseline outputs normalized to `BaselineDecisionSchema v1`; and
 - decision-tree smoke configuration stopped at depth `1`.
 
+Auditability limitations:
+
+- the run was captured from the working tree that became commits `6840d4c` and `a4f221d`; an exact pre-commit source-tree hash was not recorded;
+- the provider used the authenticated Codex CLI default model, and the resolved model identifier was not captured;
+- raw call artifacts remain in an ignored local evidence directory and are not published because they can contain provider transcripts; and
+- the request, smoke configuration, and provider configuration SHA-256 values are `73f1e0d80a3fde70fb4fae5e71811d8cd00a5d32dd9dab3cad7a3ed7ec0c133f`, `22a979651b10e05cf7997e28cdc60bc54fe34b6586f86771e8db92bfef553d35`, and `c681dcceb3cba0e49672c2695b1a356e8de03c1cd1c4ed2e3d1ac65b22356e2b` respectively.
+
+These gaps make the numbers unsuitable for independent reproduction or an inferential quality claim. The report remains a connectivity, accounting, and harness smoke result.
+
 ## Runs
 
 | Arm | Status | Calls | Input tokens | Output tokens | Total tokens | Token ratio | Latency |

@@ -6,6 +6,7 @@ import {
 import type { AgentProvider } from "../agents/provider.js";
 import {
   structuredCall,
+  StructuredOutputError,
   type AgentCallArtifact,
 } from "../agents/structured-call.js";
 
@@ -32,6 +33,19 @@ export interface BaselineSeriesResult {
     latencyMs: number;
   };
   artifacts: AgentCallArtifact<BaselineDecision>[];
+}
+
+export class BaselineSeriesError extends Error {
+  constructor(
+    message: string,
+    readonly arm: BaselineArm,
+    readonly artifacts: AgentCallArtifact<BaselineDecision>[],
+    readonly usage: BaselineSeriesResult["usage"],
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "BaselineSeriesError";
+  }
 }
 
 export const BASELINE_DECISION_CONTRACT =
@@ -87,26 +101,40 @@ export async function runBaselineSeries(
   const prefix = options.callIdPrefix ?? `baseline.${options.arm}`;
 
   for (let round = 1; round <= options.rounds; round += 1) {
-    const result = await structuredCall({
-      provider: options.provider,
-      request: (attempt, validationErrors) => ({
-        callId: `${prefix}.round-${round}.attempt-${attempt}`,
-        role: "baseline-designer",
-        input: {
-          decision: options.request,
-          arm: options.arm,
-          round,
-          totalRounds: options.rounds,
-          instruction: instruction(options.arm, round),
-          previousDecision,
-        },
-        contract: BASELINE_DECISION_CONTRACT,
-        attempt,
-        validationErrors,
-      }),
-      schema: BaselineDecisionSchema,
-      maxAttempts,
-    });
+    let result;
+    try {
+      result = await structuredCall({
+        provider: options.provider,
+        request: (attempt, validationErrors) => ({
+          callId: `${prefix}.round-${round}`,
+          role: "baseline-designer",
+          input: {
+            decision: options.request,
+            arm: options.arm,
+            round,
+            totalRounds: options.rounds,
+            instruction: instruction(options.arm, round),
+            previousDecision,
+          },
+          contract: BASELINE_DECISION_CONTRACT,
+          attempt,
+          validationErrors,
+        }),
+        schema: BaselineDecisionSchema,
+        maxAttempts,
+      });
+    } catch (error) {
+      if (error instanceof StructuredOutputError) {
+        artifacts.push(...error.artifacts as AgentCallArtifact<BaselineDecision>[]);
+      }
+      throw new BaselineSeriesError(
+        error instanceof Error ? error.message : String(error),
+        options.arm,
+        [...artifacts],
+        sumUsage(artifacts),
+        { cause: error },
+      );
+    }
     artifacts.push(...result.artifacts);
     previousDecision = result.value;
   }

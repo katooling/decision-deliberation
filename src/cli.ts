@@ -9,7 +9,11 @@ import {
   DecisionRequestSchema,
 } from "./domain/schemas.js";
 import { runSyntheticBenchmark, renderBenchmarkMarkdown } from "./benchmark/index.js";
-import { runBaselineSeries, type BaselineArm } from "./benchmark/baseline.js";
+import {
+  BaselineSeriesError,
+  runBaselineSeries,
+  type BaselineArm,
+} from "./benchmark/baseline.js";
 import { renderPairedBenchmarkMarkdown, runPairedBenchmark } from "./benchmark/live.js";
 import { DecisionEngine } from "./orchestration/engine.js";
 import { FileRunStore } from "./persistence/file-run-store.js";
@@ -218,21 +222,43 @@ async function benchmarkBaselineCommand(positional: string[], flags: Flags): Pro
     : arm === "one_shot" ? 1 : 3;
   const request = DecisionRequestSchema.parse(await readJson(requestPath));
   const provider = await loadProvider(providerPath);
-  const result = await runBaselineSeries({
-    provider,
-    request,
-    arm: arm as BaselineArm,
-    rounds,
-    maxAttemptsPerCall: 2,
-    callIdPrefix: `benchmark.${request.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${arm}`,
-  });
-  const output = `${JSON.stringify({
-    arm: result.arm,
-    rounds: result.rounds,
-    calls: result.calls,
-    usage: result.usage,
-    decision: result.decision,
-  }, null, 2)}\n`;
+  let output: string;
+  try {
+    const result = await runBaselineSeries({
+      provider,
+      request,
+      arm: arm as BaselineArm,
+      rounds,
+      maxAttemptsPerCall: 2,
+      callIdPrefix: `benchmark.${request.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${arm}`,
+    });
+    output = `${JSON.stringify({
+      status: "complete",
+      arm: result.arm,
+      rounds: result.rounds,
+      calls: result.calls,
+      usage: result.usage,
+      decision: result.decision,
+      artifacts: result.artifacts,
+    }, null, 2)}\n`;
+  } catch (error) {
+    if (!(error instanceof BaselineSeriesError)) throw error;
+    output = `${JSON.stringify({
+      status: "failed",
+      arm: error.arm,
+      rounds,
+      calls: error.artifacts.length,
+      usage: error.usage,
+      error: error.message,
+      artifacts: error.artifacts,
+    }, null, 2)}\n`;
+    if (typeof flags.out === "string") {
+      await mkdir(dirname(resolve(flags.out)), { recursive: true });
+      await writeFile(resolve(flags.out), output, "utf8");
+    }
+    process.stdout.write(output);
+    throw error;
+  }
   if (typeof flags.out === "string") {
     await mkdir(dirname(resolve(flags.out)), { recursive: true });
     await writeFile(resolve(flags.out), output, "utf8");
