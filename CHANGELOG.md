@@ -4,6 +4,12 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ## [Unreleased]
 
+### Changed
+
+- separate paired-benchmark validation, analysis, and Markdown rendering behind stable public imports;
+- compose independent product and read-only viewer request handlers through a shared local HTTP module;
+- **breaking (pre-1.0):** `startViewerServer` no longer accepts `product` or `productStaticDirectory`; callers that need write-enabled product routes must use `startDecisionAppServer`.
+
 ### Added
 
 - local product experience for decision intake, one-question-at-a-time clarification, framing, deliberation, and a review-ready result page;

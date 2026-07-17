@@ -32,6 +32,8 @@ plain-language decision
 
 The interview and framing steps use the same structured provider seam as deliberation roles. Code owns the single-current-question invariant, maximum question count, validated criteria, transition into a persisted run, and Human Approval boundary. The normal product flow exposes none of the traversal or agent-panel configuration.
 
+The local HTTP module owns loopback-by-default listening, bounded JSON request bodies, security headers, and static-file confinement. The product and viewer supply separate request-handler adapters. Product writes and same-origin validation therefore remain absent from the read-only viewer module even when both surfaces share one application port.
+
 The default topology is a deterministic hub-and-spoke coordinator:
 
 ```text

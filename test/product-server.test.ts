@@ -131,6 +131,13 @@ test("local product page completes intake, interview, dossier, ADR, and reasonin
     assert.match(scriptText, /points behind the recommendation/);
     assert.doesNotMatch(scriptText, /Bounded coverage|Partial evidence/);
 
+    const appTraversal = await fetch(`${app.url}/app/..%2Foutside.txt`);
+    assert.equal(appTraversal.status, 400);
+
+    const unsupportedRead = await fetch(`${app.url}/api/product/sessions`);
+    assert.equal(unsupportedRead.status, 405);
+    assert.equal(unsupportedRead.headers.get("allow"), "POST");
+
     const rejected = await fetch(`${app.url}/api/product/sessions`, {
       method: "POST",
       headers: { "content-type": "application/json", origin: "https://attacker.example" },

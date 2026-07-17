@@ -1,10 +1,12 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { startLocalServer } from "../http/local-server.js";
 import {
-  startViewerServer,
   type ViewerServerHandle,
 } from "../viewer/server.js";
+import { createViewerRequestHandler } from "../viewer/http-handler.js";
+import { createProductRequestHandler } from "./http-handler.js";
 import type { DecisionProduct } from "./workflow.js";
 
 export interface StartDecisionAppServerOptions {
@@ -21,16 +23,24 @@ export async function startDecisionAppServer(
   options: StartDecisionAppServerOptions,
 ): Promise<ViewerServerHandle> {
   await mkdir(resolve(options.runsDirectory), { recursive: true });
-  return startViewerServer({
-    runsDirectory: options.runsDirectory,
-    product: options.product,
+  const [productHandler, viewerHandler] = await Promise.all([
+    createProductRequestHandler({
+      product: options.product,
+      ...(options.productStaticDirectory === undefined
+        ? {}
+        : { staticDirectory: options.productStaticDirectory }),
+    }),
+    createViewerRequestHandler({
+      runsDirectory: options.runsDirectory,
+      serveAtRoot: false,
+      ...(options.viewerStaticDirectory === undefined
+        ? {}
+        : { staticDirectory: options.viewerStaticDirectory }),
+    }),
+  ]);
+  return startLocalServer({
+    handlers: [productHandler, viewerHandler],
     ...(options.host === undefined ? {} : { host: options.host }),
     ...(options.port === undefined ? {} : { port: options.port }),
-    ...(options.viewerStaticDirectory === undefined
-      ? {}
-      : { staticDirectory: options.viewerStaticDirectory }),
-    ...(options.productStaticDirectory === undefined
-      ? {}
-      : { productStaticDirectory: options.productStaticDirectory }),
   });
 }

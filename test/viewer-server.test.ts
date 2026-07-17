@@ -180,6 +180,9 @@ test("rejects traversal and writes while returning bounded errors", async () => 
   const missing = await fetch(`${handle.url}/api/runs/missing-run`);
   assert.equal(missing.status, 404);
 
+  const productRoute = await fetch(`${handle.url}/api/product/sessions`);
+  assert.equal(productRoute.status, 404);
+
   const write = await fetch(`${handle.url}/api/runs/safe-run`, { method: "POST", body: "{}" });
   assert.equal(write.status, 405);
   assert.equal(write.headers.get("allow"), "GET, HEAD");
